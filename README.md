@@ -8,3 +8,5 @@ research and scripting.
   thing scale.
 - [`prompts/script.md`](prompts/script.md) — the reusable 1,500-word script
   prompt, plus the follow-ups worth keeping.
+- [`scripts/`](scripts/) — finished scripts, one file each, with loop maps, title
+  options, and pre-record fact-check notes. Batch 1 is the streamer-economy block.
