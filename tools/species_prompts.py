@@ -19,13 +19,52 @@ import json
 import re
 from pathlib import Path
 
-STYLE = (
-    "Cartoon-style illustration of a {name}. {diagnostic}. "
-    "Full lateral profile facing left, entire animal inside the frame, "
+PROMPT = "Cartoon-style illustration of {article} {name}. {diagnostic}. {view}, {finish}"
+
+# Locked. Never varies -- this is what makes 91 generations read as one set.
+FINISH = (
     "clean bold outlines, smooth soft shading, slightly saturated natural "
     "coloration, flat plain white background, no water, no scenery, no shadow, "
-    "no text or labels, even lighting from the upper left, centered."
+    "no text or labels, even lighting from the upper left, centered"
 )
+
+# Framing DOES have to vary by animal. A turtle in lateral profile hides its
+# carapace, which is the only thing distinguishing a slider from a painted
+# turtle from a map turtle. Keyed by species name first, then category.
+VIEW_DEFAULT = "Full lateral profile facing left, entire animal inside the frame"
+VIEWS = {
+    "Turtles": (
+        "Three-quarter view from slightly above and in front, angled to the left, "
+        "showing the full carapace pattern and the head, entire animal inside the frame"
+    ),
+    "American Bullfrog": (
+        "Three-quarter view from the front and slightly above, facing left, "
+        "entire animal inside the frame"
+    ),
+    "Crayfish": (
+        "Top-down dorsal view with the claws forward, entire animal inside the frame"
+    ),
+    "Salamander": (
+        "Three-quarter view from above, angled to the left, entire animal inside the frame"
+    ),
+    "American Eel": (
+        "Lateral view held in a gentle S-curve so the full length fits the frame, "
+        "head to the left"
+    ),
+    "Freshwater Mussel": (
+        "Three-quarter view of the closed shell tilted to show the growth rings "
+        "and a sliver of the nacre inside"
+    ),
+}
+
+
+def article_for(name: str) -> str:
+    return "an" if name[0].upper() in "AEIOU" else "a"
+
+
+def view_for(category: str, name: str) -> str:
+    """Species-specific framing wins, then category, then the fish default."""
+    return VIEWS.get(name) or VIEWS.get(category) or VIEW_DEFAULT
 
 # (category, common name, diagnostic features that distinguish it visually)
 SPECIES: list[tuple[str, str, str]] = [
@@ -156,7 +195,10 @@ def build() -> list[dict]:
             "common_name": name,
             "slug": slug(name),
             "diagnostic": diagnostic,
-            "prompt": STYLE.format(name=name, diagnostic=diagnostic),
+            "prompt": PROMPT.format(name=name, diagnostic=diagnostic,
+                                    article=article_for(name),
+                                    view=view_for(category, name),
+                                    finish=FINISH),
             "status": "",
         }
         for i, (category, name, diagnostic) in enumerate(SPECIES, start=1)
