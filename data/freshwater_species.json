@@ -1,0 +1,821 @@
+[
+  {
+    "id": 1,
+    "category": "Bass",
+    "common_name": "Largemouth Bass",
+    "slug": "largemouth_bass",
+    "diagnostic": "olive-green with a dark blotchy horizontal stripe down the side, upper jaw extending past the rear of the eye, deep notch between the two dorsal fins",
+    "prompt": "Cartoon-style illustration of a Largemouth Bass. olive-green with a dark blotchy horizontal stripe down the side, upper jaw extending past the rear of the eye, deep notch between the two dorsal fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 2,
+    "category": "Bass",
+    "common_name": "Smallmouth Bass",
+    "slug": "smallmouth_bass",
+    "diagnostic": "bronze-brown with dark vertical bars, upper jaw ending below the eye, red-brown eye, shallow notch between dorsal fins",
+    "prompt": "Cartoon-style illustration of a Smallmouth Bass. bronze-brown with dark vertical bars, upper jaw ending below the eye, red-brown eye, shallow notch between dorsal fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 3,
+    "category": "Bass",
+    "common_name": "Spotted Bass",
+    "slug": "spotted_bass",
+    "diagnostic": "olive with a broken lateral blotch stripe and distinct rows of small dark spots below the lateral line, jaw ending level with the eye",
+    "prompt": "Cartoon-style illustration of a Spotted Bass. olive with a broken lateral blotch stripe and distinct rows of small dark spots below the lateral line, jaw ending level with the eye. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 4,
+    "category": "Bass",
+    "common_name": "Striped Bass",
+    "slug": "striped_bass",
+    "diagnostic": "streamlined silver body with seven or eight unbroken dark horizontal stripes, two clearly separated dorsal fins",
+    "prompt": "Cartoon-style illustration of a Striped Bass. streamlined silver body with seven or eight unbroken dark horizontal stripes, two clearly separated dorsal fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 5,
+    "category": "Bass",
+    "common_name": "White Bass",
+    "slug": "white_bass",
+    "diagnostic": "deep compressed silvery body, faint and broken horizontal stripes, high arched back",
+    "prompt": "Cartoon-style illustration of a White Bass. deep compressed silvery body, faint and broken horizontal stripes, high arched back. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 6,
+    "category": "Bass",
+    "common_name": "Yellow Bass",
+    "slug": "yellow_bass",
+    "diagnostic": "brassy gold body with dark stripes that are distinctly offset and broken toward the belly, deep body",
+    "prompt": "Cartoon-style illustration of a Yellow Bass. brassy gold body with dark stripes that are distinctly offset and broken toward the belly, deep body. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 7,
+    "category": "Bass",
+    "common_name": "Rock Bass",
+    "slug": "rock_bass",
+    "diagnostic": "sunfish-shaped brassy olive body, bright red eye, rows of dark spots following the scale rows",
+    "prompt": "Cartoon-style illustration of a Rock Bass. sunfish-shaped brassy olive body, bright red eye, rows of dark spots following the scale rows. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 8,
+    "category": "Bass",
+    "common_name": "Guadalupe Bass",
+    "slug": "guadalupe_bass",
+    "diagnostic": "small olive-green bass with dark lateral blotches extending low onto the belly, slender profile",
+    "prompt": "Cartoon-style illustration of a Guadalupe Bass. small olive-green bass with dark lateral blotches extending low onto the belly, slender profile. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 9,
+    "category": "Trout & Salmon",
+    "common_name": "Rainbow Trout",
+    "slug": "rainbow_trout",
+    "diagnostic": "silvery olive-green with a broad pink-red lateral band, heavy small black spotting across the body and the whole tail, white mouth",
+    "prompt": "Cartoon-style illustration of a Rainbow Trout. silvery olive-green with a broad pink-red lateral band, heavy small black spotting across the body and the whole tail, white mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 10,
+    "category": "Trout & Salmon",
+    "common_name": "Brown Trout",
+    "slug": "brown_trout",
+    "diagnostic": "golden-brown with black and red-orange spots ringed by pale halos, few or no spots on the tail",
+    "prompt": "Cartoon-style illustration of a Brown Trout. golden-brown with black and red-orange spots ringed by pale halos, few or no spots on the tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 11,
+    "category": "Trout & Salmon",
+    "common_name": "Brook Trout",
+    "slug": "brook_trout",
+    "diagnostic": "dark olive back with pale worm-like vermiculation, red spots with blue halos on the flanks, white leading edges on the orange lower fins",
+    "prompt": "Cartoon-style illustration of a Brook Trout. dark olive back with pale worm-like vermiculation, red spots with blue halos on the flanks, white leading edges on the orange lower fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 12,
+    "category": "Trout & Salmon",
+    "common_name": "Lake Trout",
+    "slug": "lake_trout",
+    "diagnostic": "grey-green with irregular pale cream spots over the body, deeply forked tail",
+    "prompt": "Cartoon-style illustration of a Lake Trout. grey-green with irregular pale cream spots over the body, deeply forked tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 13,
+    "category": "Trout & Salmon",
+    "common_name": "Bull Trout",
+    "slug": "bull_trout",
+    "diagnostic": "olive-green with pale yellow and orange spots, no black spots on the dorsal fin, notably large head",
+    "prompt": "Cartoon-style illustration of a Bull Trout. olive-green with pale yellow and orange spots, no black spots on the dorsal fin, notably large head. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 14,
+    "category": "Trout & Salmon",
+    "common_name": "Cutthroat Trout",
+    "slug": "cutthroat_trout",
+    "diagnostic": "olive-gold with a vivid red-orange slash under each side of the lower jaw, spotting heaviest toward the tail",
+    "prompt": "Cartoon-style illustration of a Cutthroat Trout. olive-gold with a vivid red-orange slash under each side of the lower jaw, spotting heaviest toward the tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 15,
+    "category": "Trout & Salmon",
+    "common_name": "Chinook Salmon",
+    "slug": "chinook_salmon",
+    "diagnostic": "blue-green back, black spots on both lobes of the tail, black gums inside the mouth, thick body",
+    "prompt": "Cartoon-style illustration of a Chinook Salmon. blue-green back, black spots on both lobes of the tail, black gums inside the mouth, thick body. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 16,
+    "category": "Trout & Salmon",
+    "common_name": "Coho Salmon",
+    "slug": "coho_salmon",
+    "diagnostic": "silver-blue with black spots only on the upper lobe of the tail, white gums with a dark tongue",
+    "prompt": "Cartoon-style illustration of a Coho Salmon. silver-blue with black spots only on the upper lobe of the tail, white gums with a dark tongue. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 17,
+    "category": "Trout & Salmon",
+    "common_name": "Atlantic Salmon",
+    "slug": "atlantic_salmon",
+    "diagnostic": "bright silver with scattered black X-shaped and cross-shaped marks above the lateral line, narrow caudal peduncle",
+    "prompt": "Cartoon-style illustration of a Atlantic Salmon. bright silver with scattered black X-shaped and cross-shaped marks above the lateral line, narrow caudal peduncle. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 18,
+    "category": "Trout & Salmon",
+    "common_name": "Sockeye Salmon",
+    "slug": "sockeye_salmon",
+    "diagnostic": "spawning form: brilliant crimson-red body with a bright green head and no distinct spotting, humped back",
+    "prompt": "Cartoon-style illustration of a Sockeye Salmon. spawning form: brilliant crimson-red body with a bright green head and no distinct spotting, humped back. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 19,
+    "category": "Trout & Salmon",
+    "common_name": "Steelhead",
+    "slug": "steelhead",
+    "diagnostic": "sea-run rainbow trout: chrome-silver flanks with only a faint pink band and sparse fine black spotting, more streamlined than a resident rainbow",
+    "prompt": "Cartoon-style illustration of a Steelhead. sea-run rainbow trout: chrome-silver flanks with only a faint pink band and sparse fine black spotting, more streamlined than a resident rainbow. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 20,
+    "category": "Panfish",
+    "common_name": "Bluegill",
+    "slug": "bluegill",
+    "diagnostic": "deep round compressed body, solid black opercular ear flap, dark blotch at the rear base of the soft dorsal fin, faint vertical bars, very small mouth",
+    "prompt": "Cartoon-style illustration of a Bluegill. deep round compressed body, solid black opercular ear flap, dark blotch at the rear base of the soft dorsal fin, faint vertical bars, very small mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 21,
+    "category": "Panfish",
+    "common_name": "Redear Sunfish",
+    "slug": "redear_sunfish",
+    "diagnostic": "deep olive body with a bright red-orange crescent on the margin of the black ear flap, small mouth",
+    "prompt": "Cartoon-style illustration of a Redear Sunfish. deep olive body with a bright red-orange crescent on the margin of the black ear flap, small mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 22,
+    "category": "Panfish",
+    "common_name": "Green Sunfish",
+    "slug": "green_sunfish",
+    "diagnostic": "elongated body with a noticeably larger mouth than a bluegill, blue-green wavy lines on the cheek, pale yellow-white fin margins",
+    "prompt": "Cartoon-style illustration of a Green Sunfish. elongated body with a noticeably larger mouth than a bluegill, blue-green wavy lines on the cheek, pale yellow-white fin margins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 23,
+    "category": "Panfish",
+    "common_name": "Pumpkinseed",
+    "slug": "pumpkinseed",
+    "diagnostic": "olive body speckled with orange and gold, wavy blue lines across the cheek, bright red-orange spot at the edge of the ear flap",
+    "prompt": "Cartoon-style illustration of a Pumpkinseed. olive body speckled with orange and gold, wavy blue lines across the cheek, bright red-orange spot at the edge of the ear flap. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 24,
+    "category": "Panfish",
+    "common_name": "Warmouth",
+    "slug": "warmouth",
+    "diagnostic": "mottled dark red-brown body, large mouth, three to five dark lines radiating backward from a red eye",
+    "prompt": "Cartoon-style illustration of a Warmouth. mottled dark red-brown body, large mouth, three to five dark lines radiating backward from a red eye. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 25,
+    "category": "Panfish",
+    "common_name": "Longear Sunfish",
+    "slug": "longear_sunfish",
+    "diagnostic": "orange-red body with wavy blue lines on the head, very long flexible dark ear flap edged in white",
+    "prompt": "Cartoon-style illustration of a Longear Sunfish. orange-red body with wavy blue lines on the head, very long flexible dark ear flap edged in white. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 26,
+    "category": "Panfish",
+    "common_name": "Black Crappie",
+    "slug": "black_crappie",
+    "diagnostic": "deep silvery compressed body with irregular scattered black speckling and seven or eight dorsal spines",
+    "prompt": "Cartoon-style illustration of a Black Crappie. deep silvery compressed body with irregular scattered black speckling and seven or eight dorsal spines. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 27,
+    "category": "Panfish",
+    "common_name": "White Crappie",
+    "slug": "white_crappie",
+    "diagnostic": "silvery compressed body with dark markings organized into faint vertical bars, five or six dorsal spines, more elongated than black crappie",
+    "prompt": "Cartoon-style illustration of a White Crappie. silvery compressed body with dark markings organized into faint vertical bars, five or six dorsal spines, more elongated than black crappie. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 28,
+    "category": "Panfish",
+    "common_name": "Yellow Perch",
+    "slug": "yellow_perch",
+    "diagnostic": "golden-yellow body with six to eight dark vertical bars, orange lower fins, two separate dorsal fins",
+    "prompt": "Cartoon-style illustration of a Yellow Perch. golden-yellow body with six to eight dark vertical bars, orange lower fins, two separate dorsal fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 29,
+    "category": "Panfish",
+    "common_name": "White Perch",
+    "slug": "white_perch",
+    "diagnostic": "plain silvery-grey deep body with no bars in the adult, arched back, two joined dorsal fins",
+    "prompt": "Cartoon-style illustration of a White Perch. plain silvery-grey deep body with no bars in the adult, arched back, two joined dorsal fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 30,
+    "category": "Panfish",
+    "common_name": "Redbreast Sunfish",
+    "slug": "redbreast_sunfish",
+    "diagnostic": "bright orange-red breast, long narrow all-black ear flap, blue streaks across the cheek",
+    "prompt": "Cartoon-style illustration of a Redbreast Sunfish. bright orange-red breast, long narrow all-black ear flap, blue streaks across the cheek. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 31,
+    "category": "Catfish",
+    "common_name": "Channel Catfish",
+    "slug": "channel_catfish",
+    "diagnostic": "slender silvery-olive body with scattered small dark spots, deeply forked tail, long whisker barbels",
+    "prompt": "Cartoon-style illustration of a Channel Catfish. slender silvery-olive body with scattered small dark spots, deeply forked tail, long whisker barbels. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 32,
+    "category": "Catfish",
+    "common_name": "Blue Catfish",
+    "slug": "blue_catfish",
+    "diagnostic": "slate blue-grey unspotted body, deeply forked tail, straight-edged anal fin with a long base",
+    "prompt": "Cartoon-style illustration of a Blue Catfish. slate blue-grey unspotted body, deeply forked tail, straight-edged anal fin with a long base. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 33,
+    "category": "Catfish",
+    "common_name": "Flathead Catfish",
+    "slug": "flathead_catfish",
+    "diagnostic": "mottled yellow-brown body, broad flattened head, protruding lower jaw, squared tail that is NOT forked, small high-set eyes",
+    "prompt": "Cartoon-style illustration of a Flathead Catfish. mottled yellow-brown body, broad flattened head, protruding lower jaw, squared tail that is NOT forked, small high-set eyes. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 34,
+    "category": "Catfish",
+    "common_name": "Black Bullhead",
+    "slug": "black_bullhead",
+    "diagnostic": "stocky dark body, black chin barbels, squared tail with a pale bar at its base",
+    "prompt": "Cartoon-style illustration of a Black Bullhead. stocky dark body, black chin barbels, squared tail with a pale bar at its base. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 35,
+    "category": "Catfish",
+    "common_name": "Brown Bullhead",
+    "slug": "brown_bullhead",
+    "diagnostic": "mottled brown body, dark mottled chin barbels, slightly notched tail",
+    "prompt": "Cartoon-style illustration of a Brown Bullhead. mottled brown body, dark mottled chin barbels, slightly notched tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 36,
+    "category": "Catfish",
+    "common_name": "Yellow Bullhead",
+    "slug": "yellow_bullhead",
+    "diagnostic": "yellow-olive body with clean white or pale yellow chin barbels, rounded tail",
+    "prompt": "Cartoon-style illustration of a Yellow Bullhead. yellow-olive body with clean white or pale yellow chin barbels, rounded tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 37,
+    "category": "Catfish",
+    "common_name": "Madtom",
+    "slug": "madtom",
+    "diagnostic": "very small mottled brown catfish with the adipose fin fused to the tail fin, stout barbels",
+    "prompt": "Cartoon-style illustration of a Madtom. very small mottled brown catfish with the adipose fin fused to the tail fin, stout barbels. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 38,
+    "category": "Pike & Muskie",
+    "common_name": "Northern Pike",
+    "slug": "northern_pike",
+    "diagnostic": "long torpedo body, flat duck-bill snout, rows of light bean-shaped spots on a dark green background, rounded tail lobes",
+    "prompt": "Cartoon-style illustration of a Northern Pike. long torpedo body, flat duck-bill snout, rows of light bean-shaped spots on a dark green background, rounded tail lobes. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 39,
+    "category": "Pike & Muskie",
+    "common_name": "Muskellunge",
+    "slug": "muskellunge",
+    "diagnostic": "long body with dark vertical bars and spots on a light silver-olive background, the reverse of a pike's pattern, pointed tail lobes",
+    "prompt": "Cartoon-style illustration of a Muskellunge. long body with dark vertical bars and spots on a light silver-olive background, the reverse of a pike's pattern, pointed tail lobes. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 40,
+    "category": "Pike & Muskie",
+    "common_name": "Tiger Muskie",
+    "slug": "tiger_muskie",
+    "diagnostic": "bold irregular dark vertical tiger stripes over a gold-green background, rounded fins, hybrid build",
+    "prompt": "Cartoon-style illustration of a Tiger Muskie. bold irregular dark vertical tiger stripes over a gold-green background, rounded fins, hybrid build. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 41,
+    "category": "Pike & Muskie",
+    "common_name": "Chain Pickerel",
+    "slug": "chain_pickerel",
+    "diagnostic": "slender green body with a bold dark chain-link reticulated pattern, dark vertical teardrop bar below the eye",
+    "prompt": "Cartoon-style illustration of a Chain Pickerel. slender green body with a bold dark chain-link reticulated pattern, dark vertical teardrop bar below the eye. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 42,
+    "category": "Pike & Muskie",
+    "common_name": "Redfin Pickerel",
+    "slug": "redfin_pickerel",
+    "diagnostic": "small slender pickerel with orange-red fins and a dark teardrop bar below the eye",
+    "prompt": "Cartoon-style illustration of a Redfin Pickerel. small slender pickerel with orange-red fins and a dark teardrop bar below the eye. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 43,
+    "category": "Walleye & Sauger",
+    "common_name": "Walleye",
+    "slug": "walleye",
+    "diagnostic": "gold-olive body, large glassy opaque white eye, dark blotch at the rear of the spiny dorsal fin, distinct white tip on the lower tail lobe",
+    "prompt": "Cartoon-style illustration of a Walleye. gold-olive body, large glassy opaque white eye, dark blotch at the rear of the spiny dorsal fin, distinct white tip on the lower tail lobe. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 44,
+    "category": "Walleye & Sauger",
+    "common_name": "Sauger",
+    "slug": "sauger",
+    "diagnostic": "brassy body with dark saddle-shaped blotches, rows of distinct spots across the spiny dorsal fin, no white tail tip",
+    "prompt": "Cartoon-style illustration of a Sauger. brassy body with dark saddle-shaped blotches, rows of distinct spots across the spiny dorsal fin, no white tail tip. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 45,
+    "category": "Walleye & Sauger",
+    "common_name": "Saugeye",
+    "slug": "saugeye",
+    "diagnostic": "hybrid intermediate: faint dark saddles plus some spotting on the spiny dorsal, faint white tail tip",
+    "prompt": "Cartoon-style illustration of a Saugeye. hybrid intermediate: faint dark saddles plus some spotting on the spiny dorsal, faint white tail tip. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 46,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Common Carp",
+    "slug": "common_carp",
+    "diagnostic": "heavy brassy-gold body with large visible scales, two pairs of barbels at the mouth, long serrated dorsal fin",
+    "prompt": "Cartoon-style illustration of a Common Carp. heavy brassy-gold body with large visible scales, two pairs of barbels at the mouth, long serrated dorsal fin. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 47,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Grass Carp",
+    "slug": "grass_carp",
+    "diagnostic": "elongated olive-silver body with large dark-edged scales, no barbels, short dorsal fin, blunt head",
+    "prompt": "Cartoon-style illustration of a Grass Carp. elongated olive-silver body with large dark-edged scales, no barbels, short dorsal fin, blunt head. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 48,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Bighead Carp",
+    "slug": "bighead_carp",
+    "diagnostic": "very large head with low-set eyes below the mouth line, dark grey blotchy mottling, no barbels",
+    "prompt": "Cartoon-style illustration of a Bighead Carp. very large head with low-set eyes below the mouth line, dark grey blotchy mottling, no barbels. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 49,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Silver Carp",
+    "slug": "silver_carp",
+    "diagnostic": "bright silver body, smaller head than bighead, eyes set very low, upturned mouth, keeled belly",
+    "prompt": "Cartoon-style illustration of a Silver Carp. bright silver body, smaller head than bighead, eyes set very low, upturned mouth, keeled belly. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 50,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Bigmouth Buffalo",
+    "slug": "bigmouth_buffalo",
+    "diagnostic": "dark bronze sucker-like body with a large terminal mouth angled upward, long dorsal fin",
+    "prompt": "Cartoon-style illustration of a Bigmouth Buffalo. dark bronze sucker-like body with a large terminal mouth angled upward, long dorsal fin. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 51,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Smallmouth Buffalo",
+    "slug": "smallmouth_buffalo",
+    "diagnostic": "bronze body with a steeply arched back and a small downturned subterminal mouth",
+    "prompt": "Cartoon-style illustration of a Smallmouth Buffalo. bronze body with a steeply arched back and a small downturned subterminal mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 52,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Black Buffalo",
+    "slug": "black_buffalo",
+    "diagnostic": "dark bronze-black cylindrical body, mouth intermediate between the other buffalo species",
+    "prompt": "Cartoon-style illustration of a Black Buffalo. dark bronze-black cylindrical body, mouth intermediate between the other buffalo species. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 53,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Freshwater Drum",
+    "slug": "freshwater_drum",
+    "diagnostic": "silvery body with a high arched back, blunt snout with a subterminal mouth, rounded tail",
+    "prompt": "Cartoon-style illustration of a Freshwater Drum. silvery body with a high arched back, blunt snout with a subterminal mouth, rounded tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 54,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Bowfin",
+    "slug": "bowfin",
+    "diagnostic": "long cylindrical olive body, very long undulating dorsal fin running most of the back, bony plated head, black eyespot ringed in orange at the tail base",
+    "prompt": "Cartoon-style illustration of a Bowfin. long cylindrical olive body, very long undulating dorsal fin running most of the back, bony plated head, black eyespot ringed in orange at the tail base. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 55,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Longnose Gar",
+    "slug": "longnose_gar",
+    "diagnostic": "cylindrical armored body with an extremely long narrow toothed beak roughly twice the length of the head, diamond-shaped scales",
+    "prompt": "Cartoon-style illustration of a Longnose Gar. cylindrical armored body with an extremely long narrow toothed beak roughly twice the length of the head, diamond-shaped scales. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 56,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Shortnose Gar",
+    "slug": "shortnose_gar",
+    "diagnostic": "cylindrical olive-brown gar with a short broad snout and dark spots on the rear fins",
+    "prompt": "Cartoon-style illustration of a Shortnose Gar. cylindrical olive-brown gar with a short broad snout and dark spots on the rear fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 57,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Spotted Gar",
+    "slug": "spotted_gar",
+    "diagnostic": "gar with bold dark round spots across the head, body, and all fins, medium-length snout",
+    "prompt": "Cartoon-style illustration of a Spotted Gar. gar with bold dark round spots across the head, body, and all fins, medium-length snout. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 58,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Alligator Gar",
+    "slug": "alligator_gar",
+    "diagnostic": "massive heavy-bodied gar with a broad short alligator-like snout and two rows of teeth in the upper jaw",
+    "prompt": "Cartoon-style illustration of a Alligator Gar. massive heavy-bodied gar with a broad short alligator-like snout and two rows of teeth in the upper jaw. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 59,
+    "category": "Carp, Gar & Rough Fish",
+    "common_name": "Quillback",
+    "slug": "quillback",
+    "diagnostic": "deep silvery compressed sucker with a dramatically elongated first dorsal ray forming a tall quill, downturned mouth",
+    "prompt": "Cartoon-style illustration of a Quillback. deep silvery compressed sucker with a dramatically elongated first dorsal ray forming a tall quill, downturned mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 60,
+    "category": "Sturgeon",
+    "common_name": "Lake Sturgeon",
+    "slug": "lake_sturgeon",
+    "diagnostic": "olive-brown prehistoric body with five rows of bony scutes, four barbels ahead of a protrusible mouth, shark-like upturned tail",
+    "prompt": "Cartoon-style illustration of a Lake Sturgeon. olive-brown prehistoric body with five rows of bony scutes, four barbels ahead of a protrusible mouth, shark-like upturned tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 61,
+    "category": "Sturgeon",
+    "common_name": "White Sturgeon",
+    "slug": "white_sturgeon",
+    "diagnostic": "very large grey sturgeon with a short blunt snout and barbels set closer to the snout tip than the mouth",
+    "prompt": "Cartoon-style illustration of a White Sturgeon. very large grey sturgeon with a short blunt snout and barbels set closer to the snout tip than the mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 62,
+    "category": "Sturgeon",
+    "common_name": "Shovelnose Sturgeon",
+    "slug": "shovelnose_sturgeon",
+    "diagnostic": "small pale sturgeon with a broad flattened shovel-shaped snout and a long trailing filament on the upper tail lobe",
+    "prompt": "Cartoon-style illustration of a Shovelnose Sturgeon. small pale sturgeon with a broad flattened shovel-shaped snout and a long trailing filament on the upper tail lobe. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 63,
+    "category": "Sturgeon",
+    "common_name": "Pallid Sturgeon",
+    "slug": "pallid_sturgeon",
+    "diagnostic": "pale grey-white slender sturgeon with a long flattened pointed snout",
+    "prompt": "Cartoon-style illustration of a Pallid Sturgeon. pale grey-white slender sturgeon with a long flattened pointed snout. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 64,
+    "category": "Other Freshwater Fish",
+    "common_name": "Cisco",
+    "slug": "cisco",
+    "diagnostic": "slender silvery herring-like body with a terminal mouth, small adipose fin, deeply forked tail",
+    "prompt": "Cartoon-style illustration of a Cisco. slender silvery herring-like body with a terminal mouth, small adipose fin, deeply forked tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 65,
+    "category": "Other Freshwater Fish",
+    "common_name": "Lake Whitefish",
+    "slug": "lake_whitefish",
+    "diagnostic": "silvery body with a distinctly humped back behind the head and a small subterminal mouth beneath a blunt snout",
+    "prompt": "Cartoon-style illustration of a Lake Whitefish. silvery body with a distinctly humped back behind the head and a small subterminal mouth beneath a blunt snout. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 66,
+    "category": "Other Freshwater Fish",
+    "common_name": "Burbot",
+    "slug": "burbot",
+    "diagnostic": "elongated eel-like cod with mottled brown and yellow marbling, a single barbel on the chin, very long second dorsal fin",
+    "prompt": "Cartoon-style illustration of a Burbot. elongated eel-like cod with mottled brown and yellow marbling, a single barbel on the chin, very long second dorsal fin. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 67,
+    "category": "Other Freshwater Fish",
+    "common_name": "Mooneye",
+    "slug": "mooneye",
+    "diagnostic": "deep compressed bright silver body with a very large silver eye and a keeled belly",
+    "prompt": "Cartoon-style illustration of a Mooneye. deep compressed bright silver body with a very large silver eye and a keeled belly. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 68,
+    "category": "Other Freshwater Fish",
+    "common_name": "Goldeye",
+    "slug": "goldeye",
+    "diagnostic": "deep compressed silver body with a striking gold-yellow eye and a fleshy keel along the belly",
+    "prompt": "Cartoon-style illustration of a Goldeye. deep compressed silver body with a striking gold-yellow eye and a fleshy keel along the belly. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 69,
+    "category": "Other Freshwater Fish",
+    "common_name": "American Shad",
+    "slug": "american_shad",
+    "diagnostic": "deep compressed silver body with a row of dark shoulder spots behind the gill, sharp sawtooth belly scutes, deeply forked tail",
+    "prompt": "Cartoon-style illustration of a American Shad. deep compressed silver body with a row of dark shoulder spots behind the gill, sharp sawtooth belly scutes, deeply forked tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 70,
+    "category": "Other Freshwater Fish",
+    "common_name": "Hickory Shad",
+    "slug": "hickory_shad",
+    "diagnostic": "silver compressed body with a lower jaw projecting well past the upper and a single faint shoulder spot",
+    "prompt": "Cartoon-style illustration of a Hickory Shad. silver compressed body with a lower jaw projecting well past the upper and a single faint shoulder spot. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 71,
+    "category": "Other Freshwater Fish",
+    "common_name": "White Sucker",
+    "slug": "white_sucker",
+    "diagnostic": "cylindrical olive-brown body fading to a white belly, ventral sucker mouth with thick fleshy lips",
+    "prompt": "Cartoon-style illustration of a White Sucker. cylindrical olive-brown body fading to a white belly, ventral sucker mouth with thick fleshy lips. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 72,
+    "category": "Other Freshwater Fish",
+    "common_name": "Longnose Sucker",
+    "slug": "longnose_sucker",
+    "diagnostic": "dark olive elongated sucker with a long fleshy snout overhanging the mouth",
+    "prompt": "Cartoon-style illustration of a Longnose Sucker. dark olive elongated sucker with a long fleshy snout overhanging the mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 73,
+    "category": "Other Freshwater Fish",
+    "common_name": "Redhorse Sucker",
+    "slug": "redhorse_sucker",
+    "diagnostic": "bronze-gold sucker body with bright red-orange tail and lower fins, thick-lipped ventral mouth",
+    "prompt": "Cartoon-style illustration of a Redhorse Sucker. bronze-gold sucker body with bright red-orange tail and lower fins, thick-lipped ventral mouth. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 74,
+    "category": "Turtles",
+    "common_name": "Common Snapping Turtle",
+    "slug": "common_snapping_turtle",
+    "diagnostic": "massive head with a strongly hooked beak, rough ridged carapace, very long saw-toothed tail, small cross-shaped plastron",
+    "prompt": "Cartoon-style illustration of a Common Snapping Turtle. massive head with a strongly hooked beak, rough ridged carapace, very long saw-toothed tail, small cross-shaped plastron. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 75,
+    "category": "Turtles",
+    "common_name": "Common Musk Turtle",
+    "slug": "common_musk_turtle",
+    "diagnostic": "small dark domed shell, two pale yellow stripes running along the head, small barbels beneath the chin",
+    "prompt": "Cartoon-style illustration of a Common Musk Turtle. small dark domed shell, two pale yellow stripes running along the head, small barbels beneath the chin. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 76,
+    "category": "Turtles",
+    "common_name": "Painted Turtle",
+    "slug": "painted_turtle",
+    "diagnostic": "smooth flattened olive shell edged with red bars on the marginal scutes, yellow head stripes, red-orange plastron",
+    "prompt": "Cartoon-style illustration of a Painted Turtle. smooth flattened olive shell edged with red bars on the marginal scutes, yellow head stripes, red-orange plastron. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 77,
+    "category": "Turtles",
+    "common_name": "Red-Eared Slider",
+    "slug": "red_eared_slider",
+    "diagnostic": "olive-green shell with yellow striping and a prominent broad red stripe just behind each eye",
+    "prompt": "Cartoon-style illustration of a Red-Eared Slider. olive-green shell with yellow striping and a prominent broad red stripe just behind each eye. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 78,
+    "category": "Turtles",
+    "common_name": "Map Turtle",
+    "slug": "map_turtle",
+    "diagnostic": "olive shell marked with fine contour-line map patterning, a raised keel ridge down the back, thin yellow head lines",
+    "prompt": "Cartoon-style illustration of a Map Turtle. olive shell marked with fine contour-line map patterning, a raised keel ridge down the back, thin yellow head lines. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 79,
+    "category": "Turtles",
+    "common_name": "Spiny Softshell Turtle",
+    "slug": "spiny_softshell_turtle",
+    "diagnostic": "flat leathery pancake-shaped olive shell with small spines along the front edge, long neck and a tubular snorkel snout",
+    "prompt": "Cartoon-style illustration of a Spiny Softshell Turtle. flat leathery pancake-shaped olive shell with small spines along the front edge, long neck and a tubular snorkel snout. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 80,
+    "category": "Turtles",
+    "common_name": "Florida Softshell Turtle",
+    "slug": "florida_softshell_turtle",
+    "diagnostic": "dark grey-brown leathery shell with a bumpy front margin, very wide flattened body, long neck and tubular snout",
+    "prompt": "Cartoon-style illustration of a Florida Softshell Turtle. dark grey-brown leathery shell with a bumpy front margin, very wide flattened body, long neck and tubular snout. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 81,
+    "category": "Turtles",
+    "common_name": "Alligator Snapping Turtle",
+    "slug": "alligator_snapping_turtle",
+    "diagnostic": "three prominent ridged keels running down a spiked carapace, enormous armored head with a strongly hooked beak, long tail",
+    "prompt": "Cartoon-style illustration of a Alligator Snapping Turtle. three prominent ridged keels running down a spiked carapace, enormous armored head with a strongly hooked beak, long tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 82,
+    "category": "Turtles",
+    "common_name": "Diamondback Terrapin",
+    "slug": "diamondback_terrapin",
+    "diagnostic": "grey shell marked with concentric diamond growth rings, pale grey skin covered in fine black speckles",
+    "prompt": "Cartoon-style illustration of a Diamondback Terrapin. grey shell marked with concentric diamond growth rings, pale grey skin covered in fine black speckles. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 83,
+    "category": "Turtles",
+    "common_name": "Chicken Turtle",
+    "slug": "chicken_turtle",
+    "diagnostic": "very long striped neck, narrow oval shell with a fine net-like pattern, bold yellow striping on the hind legs",
+    "prompt": "Cartoon-style illustration of a Chicken Turtle. very long striped neck, narrow oval shell with a fine net-like pattern, bold yellow striping on the hind legs. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 84,
+    "category": "Turtles",
+    "common_name": "Spotted Turtle",
+    "slug": "spotted_turtle",
+    "diagnostic": "small smooth black shell scattered with round bright yellow spots, black head with yellow spots",
+    "prompt": "Cartoon-style illustration of a Spotted Turtle. small smooth black shell scattered with round bright yellow spots, black head with yellow spots. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 85,
+    "category": "Turtles",
+    "common_name": "Box Turtle",
+    "slug": "box_turtle",
+    "diagnostic": "high domed shell with radiating orange and yellow patterning, hinged plastron that closes tight",
+    "prompt": "Cartoon-style illustration of a Box Turtle. high domed shell with radiating orange and yellow patterning, hinged plastron that closes tight. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 86,
+    "category": "Amphibians & Other",
+    "common_name": "American Bullfrog",
+    "slug": "american_bullfrog",
+    "diagnostic": "large green-brown frog with a prominent round eardrum behind the eye, no ridges along the back, heavily webbed hind feet",
+    "prompt": "Cartoon-style illustration of a American Bullfrog. large green-brown frog with a prominent round eardrum behind the eye, no ridges along the back, heavily webbed hind feet. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 87,
+    "category": "Amphibians & Other",
+    "common_name": "American Eel",
+    "slug": "american_eel",
+    "diagnostic": "long snake-like bronze-olive body with a single continuous dorsal fin running to the tail and small rounded pectoral fins",
+    "prompt": "Cartoon-style illustration of a American Eel. long snake-like bronze-olive body with a single continuous dorsal fin running to the tail and small rounded pectoral fins. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 88,
+    "category": "Amphibians & Other",
+    "common_name": "Crayfish",
+    "slug": "crayfish",
+    "diagnostic": "red-brown lobster-like crustacean with large front claws, segmented body and a fanned tail",
+    "prompt": "Cartoon-style illustration of a Crayfish. red-brown lobster-like crustacean with large front claws, segmented body and a fanned tail. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 89,
+    "category": "Amphibians & Other",
+    "common_name": "Freshwater Mussel",
+    "slug": "freshwater_mussel",
+    "diagnostic": "elongated oval bivalve shell in dark brown with visible concentric growth rings and iridescent nacre at the opening",
+    "prompt": "Cartoon-style illustration of a Freshwater Mussel. elongated oval bivalve shell in dark brown with visible concentric growth rings and iridescent nacre at the opening. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 90,
+    "category": "Amphibians & Other",
+    "common_name": "Freshwater Shrimp",
+    "slug": "freshwater_shrimp",
+    "diagnostic": "small translucent grey shrimp with a curved body and long antennae",
+    "prompt": "Cartoon-style illustration of a Freshwater Shrimp. small translucent grey shrimp with a curved body and long antennae. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  },
+  {
+    "id": 91,
+    "category": "Amphibians & Other",
+    "common_name": "Salamander",
+    "slug": "salamander",
+    "diagnostic": "elongated smooth-skinned amphibian with four short legs, a long tail, and mottled dark markings",
+    "prompt": "Cartoon-style illustration of a Salamander. elongated smooth-skinned amphibian with four short legs, a long tail, and mottled dark markings. Full lateral profile facing left, entire animal inside the frame, clean bold outlines, smooth soft shading, slightly saturated natural coloration, flat plain white background, no water, no scenery, no shadow, no text or labels, even lighting from the upper left, centered.",
+    "status": ""
+  }
+]
