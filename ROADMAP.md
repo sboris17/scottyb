@@ -82,3 +82,53 @@ irrelevant here.
 3. **Content starts week 1**, not launch week. ReelView shipped to an
    audience of zero and earned zero.
 4. Anything added after the v1 scope lock goes to POST-MVP.md.
+
+## Pre-launch gates — must clear before App Store submission
+
+Blocking. None of these are optional, and all are cheaper to fix now than
+after there are users.
+
+### 1. OpenAI API key ships inside the app bundle — BLOCKING
+
+`lib/env.ts` reads `EXPO_PUBLIC_OPENAI_API_KEY`; `lib/openai.ts:82` calls
+OpenAI directly from the device. Anything prefixed `EXPO_PUBLIC_` is compiled
+into the bundle and is trivially extractable from a published IPA. Automated
+scrapers do this. OpenAI keys have no per-key spend cap by default.
+
+**Fix:** move the vision call into a Supabase Edge Function.
+- Function holds `OPENAI_API_KEY` as a Supabase secret, server-side
+- App calls `supabase.functions.invoke('identify-catch', { body: { imageUrl } })`
+- The user's JWT authenticates the call; verify it server-side
+- Add a per-user daily scan cap so one compromised account cannot drain billing
+- Rotate the existing key after the migration — assume it is already burned
+
+Estimated 3–4 hours. Slot no later than Week 4 (Sep 22–28).
+
+The Supabase anon key is fine to ship — it is designed to be public, and
+safety depends on RLS policies, which look sound.
+
+### 2. Scan photos accumulate in a public bucket
+
+`uploadScanPhotoForVision` writes to `catch-photos`, which must be publicly
+readable for OpenAI to fetch the image. Those temporary scan uploads are
+never deleted, so they pile up permanently at predictable paths in a public
+bucket. Delete each one after identification returns.
+
+Moot once gate 1 lands — an edge function can pass image bytes directly and
+never needs a public URL at all. Fix them together.
+
+### 3. Catch photo privacy
+
+`catch-photos` being public means any user's catch photos are readable by
+anyone holding the URL. Acceptable for a single-user beta; decide before
+launch whether to move to signed URLs generated at read time. If you do,
+never store a signed URL in `photo_url` — they expire.
+
+## Log
+
+- **2026-08-30** — expo-image migration shipped (`351f758`). All 11 remote
+  image call sites now render through `components/ui/RemoteImage.tsx` with
+  memory-disk caching and a visible fallback, fixing photos silently blanking
+  on any network hiccup. Bundled with a bump of 16 Expo native modules and
+  react-native 0.83.6 → 0.83.10; if the native build regresses, that one
+  commit holds both changes.
