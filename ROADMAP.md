@@ -132,3 +132,38 @@ never store a signed URL in `photo_url` — they expire.
   on any network hiccup. Bundled with a bump of 16 Expo native modules and
   react-native 0.83.6 → 0.83.10; if the native build regresses, that one
   commit holds both changes.
+
+## Re-baseline — 2026-08-31
+
+**Art was 79% complete when the original schedule was written.** An audit of
+`assets/species/sprites` (76 files) and `assets/species/custom` (17) against
+the 91-species list found **72 already illustrated, 19 missing** — of which
+only **two are fish** (Redbreast Sunfish, Madtom). The remainder is 11 turtles
+and 6 amphibians/invertebrates.
+
+The original Weeks 2–3 "art sprint" assumed generating 91 plates. The real
+remaining work is ~19 generations, roughly one evening. **Weeks 2–3 collapse
+and the ship date moves in by about three weeks.**
+
+Also shipped ahead of schedule:
+- `351f758` expo-image migration with disk cache and visible fallback
+- `e9e50ca` nested-modal fix so save success/failure is finally observable,
+  plus 1600px/0.8 downscale before upload
+
+### Revised critical path
+
+| # | Item | Est. | Blocking? |
+|---|---|---|---|
+| 1 | Verify a real catch saves on device (build 34+) | 10 min | **Yes** — core loop unverified |
+| 2 | Generate the 19 remaining plates | 1 evening | Yes |
+| 3 | Account deletion edge function | 3–4 hrs | **App Store rejection** |
+| 4 | Move OpenAI key server-side | 3–4 hrs | **Security** |
+| 5 | App Store listing, screenshots, ASO | 1 day | Yes |
+| 6 | Submit | — | — |
+
+Items 3 and 4 are the same afternoon — both are Supabase Edge Functions, and
+the OpenAI proxy also removes the need to upload scan photos to a public
+bucket at all.
+
+**Content cadence is unchanged and remains the binding constraint.** Shipping
+three weeks earlier does not help if the launch-day audience is still zero.
