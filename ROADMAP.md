@@ -167,3 +167,46 @@ bucket at all.
 
 **Content cadence is unchanged and remains the binding constraint.** Shipping
 three weeks earlier does not help if the launch-day audience is still zero.
+
+## Correction — 2026-08-31 (supersedes the re-baseline above)
+
+The previous entry claimed 72 of 91 freshwater species were illustrated. That
+was wrong: it counted filenames without opening them.
+
+Measured properly:
+- `assets/species/sprites` — 73 of 76 files are **136x136 px, 4-64 KB**.
+  Scraped web thumbnails, not artwork. These are the source of the blurred
+  cards with foreign text visible through them, in the dex and on the
+  Identify screen.
+- `assets/species/custom` — 15 of 17 files are **1024x558/683, 400 KB-1 MB**.
+  This is the real generated art. Two files there are also junk:
+  `white-bass.png` (127x87) and `striped-bass-field-guide.png` (110x91).
+
+**Real art: 6 freshwater, 9 saltwater.** Freshwater remaining: **85**, not 19.
+
+### The silhouette is now the critical unblock
+
+Not polish. It is what decouples shipping from finishing the art. With
+un-illustrated species rendering as a clean silhouette, the dex reads as
+intentional at any level of completeness and the app can ship with ~20 done.
+Without it, 85 blurred thumbnails make the app unshippable.
+
+Delete the 136px sprites rather than keeping them as a fallback — they are
+worse than an honest silhouette.
+
+Secondary benefit: each batch of newly added species becomes a content post,
+which the launch plan needs anyway.
+
+### Revised critical path
+
+| # | Item | Est. | Blocking? |
+|---|---|---|---|
+| 1 | Verify a real catch saves on device | 10 min | **Yes** — still unverified |
+| 2 | Silhouette fallback + delete 136px sprites | 1-2 hrs | **Yes** — gates shipping |
+| 3 | Generate species art, batched | ongoing | No, once #2 lands |
+| 4 | Account deletion edge function | 3-4 hrs | **App Store rejection** |
+| 5 | Move OpenAI key server-side | same session as #4 | **Security** |
+| 6 | Listing, screenshots, ASO | 1 day | Yes |
+
+**Method note:** verify asset claims by opening files and checking dimensions,
+not by listing directories.
