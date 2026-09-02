@@ -29,18 +29,27 @@ public struct PoseInterpreter {
             }
         }
 
+        // The hip is taken from whichever side is more confident, rather than
+        // the side the arm came from. Viewed side-on the two hips almost
+        // coincide, so tying them together buys nothing and costs everything:
+        // one unreliable hip made every frame unusable and the count sat at
+        // zero, while the skeleton kept drawing perfectly from the other
+        // joints. Green lines, no count, and nothing visibly wrong.
+        let hipSide: JointName.Side =
+            (frame[.hip(.left)]?.confidence ?? 0) >= (frame[.hip(.right)]?.confidence ?? 0) ? .left : .right
+
         guard let choice = best, choice.confidence >= tuning.minJointConfidence,
               let shoulder = frame[.shoulder(choice.side)],
               let elbow = frame[.elbow(choice.side)],
               let wrist = frame[.wrist(choice.side)],
-              let hip = frame[.hip(choice.side)], hip.confidence >= tuning.minJointConfidence,
+              let hip = frame[.hip(hipSide)], hip.confidence >= tuning.minJointConfidence,
               let rawAngle = Geometry.angle(shoulder.position, vertex: elbow.position, wrist.position)
         else {
             return .unusable(at: frame.time)
         }
 
         var hipAngle: Double?
-        if let knee = frame[.knee(choice.side)], knee.confidence >= tuning.minJointConfidence {
+        if let knee = frame[.knee(hipSide)], knee.confidence >= tuning.minJointConfidence {
             hipAngle = Geometry.angle(shoulder.position, vertex: hip.position, knee.position)
         }
 

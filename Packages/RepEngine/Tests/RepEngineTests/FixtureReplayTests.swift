@@ -45,7 +45,8 @@ final class FixtureReplayTests: XCTestCase {
     static let allFixtures = [
         "standard_10", "shallow_10", "very_shallow_8", "slow_deep_8", "fast_15",
         "fatigue_12", "sagging_back_10", "pause_at_bottom_6", "dropout_8_of_10",
-        "noisy_10", "negative_idle_plank", "negative_arm_bend",
+        "noisy_10", "weak_hip_10", "flicker_10",
+        "negative_idle_plank", "negative_arm_bend",
         "negative_noisy_idle", "negative_bouncing",
     ]
 
@@ -106,6 +107,15 @@ final class FixtureReplayTests: XCTestCase {
     func testSaggingBackStillCounts() throws { try assertExact("sagging_back_10") }
     func testHeavyPoseJitter() throws { try assertExact("noisy_10") }
 
+    /// One unreliable hip used to take the count from ten to zero, because a
+    /// frame was only usable if shoulder, elbow, wrist AND hip were all
+    /// confident on the same side. The skeleton kept drawing from the other
+    /// joints, so it looked like everything was working.
+    func testOneWeakHipDoesNotStopCounting() throws { try assertExact("weak_hip_10") }
+
+    /// Detection blinking in and out, as it does on a distant or dim subject.
+    func testIntermittentDetectionStillCounts() throws { try assertExact("flicker_10") }
+
     /// The case fixed thresholds get wrong. A user whose honest bottom is
     /// ~118 degrees never crosses a hard 100, and a fixed-threshold engine
     /// reports zero for a set they really did.
@@ -159,7 +169,7 @@ final class FixtureReplayTests: XCTestCase {
             error += abs(result.counted - result.expected)
             expected += result.expected
         }
-        XCTAssertEqual(expected, 97, "the positive fixture set changed shape")
+        XCTAssertEqual(expected, 117, "the positive fixture set changed shape")
         let accuracy = 1 - Double(error) / Double(expected)
         XCTAssertGreaterThanOrEqual(accuracy, 0.98,
             "Rep accuracy \(accuracy * 100)% is below the 98% ship gate")

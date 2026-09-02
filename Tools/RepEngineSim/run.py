@@ -67,6 +67,15 @@ SCENARIOS = [
      lambda s=7: synth.build(reps(10, top=164, bottom=84, period=2.0), noise=0.011, seed=s),
      "Heavy pose jitter, e.g. loose clothing or a busy background."),
 
+    ("weak_hip_10", 10,
+     lambda s=7: synth.build(reps(10, top=165, bottom=80, period=2.0),
+                             weak_joints=("left_hip",), seed=s),
+     "One unreliable hip. Used to zero the count while the skeleton drew fine."),
+
+    ("flicker_10", 10,
+     lambda s=7: synth.build(reps(10, top=165, bottom=80, period=2.0), flicker=0.12, seed=s),
+     "Detection blinking in and out, as it does on a distant or dim subject."),
+
     # --- negatives: any count above zero here is a trust-destroying bug ---
     ("negative_idle_plank", 0,
      lambda s=7: synth.build(reps(1, top=166, bottom=164, period=8.0), seed=s),

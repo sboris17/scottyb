@@ -94,7 +94,8 @@ def rep_profile(top, bottom, period, hold_top=0.0, hold_bottom=0.0):
     return theta, period, hold_top, hold_bottom
 
 
-def build(reps, noise=0.0035, sag=0.0, seed=7, dropout=None, wrist_motion=False):
+def build(reps, noise=0.0035, sag=0.0, seed=7, dropout=None, wrist_motion=False,
+          flicker=0.0, weak_joints=()):
     """Render a list of rep specs into (t, joints) frames at FPS.
 
     Each spec: dict(top=, bottom=, period=, hold_top=, hold_bottom=, sag=)
@@ -110,6 +111,16 @@ def build(reps, noise=0.0035, sag=0.0, seed=7, dropout=None, wrist_motion=False)
         joints = frame(theta, sag=local_sag, wrist=w, noise=noise, rng=rng)
         if dropout and dropout[0] <= t <= dropout[1]:
             joints = {k: (v[0], v[1], 0.05) for k, v in joints.items()}
+        # Brief single-frame dropouts, which is how real pose tracking behaves
+        # on a distant or dimly lit subject: the skeleton is visible but blinks.
+        elif flicker and rng.random() < flicker:
+            joints = {k: (v[0], v[1], 0.05) for k, v in joints.items()}
+        # Individual joints Vision reports but is unsure about - occluded by
+        # the body, hidden by clothing, or simply far away.
+        for name in weak_joints:
+            if name in joints:
+                x, y, _ = joints[name]
+                joints[name] = (x, y, 0.12)
         frames.append((round(t, 4), joints))
         t += dt
 

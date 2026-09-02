@@ -565,10 +565,18 @@ class PoseInterpreter:
 
         conf, side, (shoulder, elbow, wrist) = best
         raw_angle = angle_between(shoulder[:2], elbow[:2], wrist[:2])
-        hip = joints.get(f"{side}_hip")
-        knee = joints.get(f"{side}_knee")
+        # Take the hip from whichever side is more confident, rather than the
+        # side the arm came from. Viewed side-on the two hips almost coincide,
+        # so tying them together buys nothing and costs everything: one
+        # unreliable hip made every single frame unusable and the count sat at
+        # zero, while the skeleton carried on drawing perfectly from the other
+        # joints. Green lines and no count, with nothing to see wrong.
+        hip_side = max(("left", "right"),
+                       key=lambda side_name: (joints.get(f"{side_name}_hip") or (0, 0, 0))[2])
+        hip = joints.get(f"{hip_side}_hip")
+        knee = joints.get(f"{hip_side}_knee")
         if raw_angle is None or hip is None or hip[2] < MIN_JOINT_CONFIDENCE:
-            return Sample(t, 0.0, 0.0, 1.0, None, confident=False)
+            return Sample(t, 0.0, (0.0, 0.0), 1.0, None, confident=False)
 
         torso = math.dist(shoulder[:2], hip[:2])
         hip_angle = None
