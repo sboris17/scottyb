@@ -85,7 +85,11 @@ final class FixtureReplayTests: XCTestCase {
     func testEveryFixtureIsPresentAndPopulated() throws {
         for name in Self.allFixtures {
             let fixture = try Self.load(name)
-            XCTAssertGreaterThan(fixture.frames.count, 100, "\(name) has too few frames")
+            // At 15fps, two seconds. Enough to prove the clip is populated and
+            // not truncated, while staying true of the short negative clips.
+            XCTAssertGreaterThanOrEqual(fixture.frames.count, 30, "\(name) looks truncated")
+            XCTAssertEqual(fixture.frames.first?.count, 1 + fixture.joints.count * 3,
+                           "\(name) rows do not match its joint list")
             XCTAssertEqual(fixture.joints.count, 12, "\(name) is missing joints")
             let frames = Self.poseFrames(fixture)
             XCTAssertEqual(frames.count, fixture.frames.count)
