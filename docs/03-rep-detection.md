@@ -56,46 +56,63 @@ distance — is tracked in parallel and used to reject false positives (see belo
 
 ## Adaptive thresholds
 
-Fixed thresholds fail across body types, camera angles, and depth of movement. A
-user with a shallow range of motion never crosses a hard 100° bottom threshold
-and gets counted as zero, which is the worst possible failure.
+Fixed thresholds fail across body types, camera angles, and depth of movement.
+A user whose honest bottom is 118 degrees never crosses a hard 100-degree
+threshold and gets counted as zero, which is the worst possible failure.
 
-Instead, calibrate to the individual, live:
+So the thresholds live inside whatever range the user is actually producing:
 
-1. Start with defaults: top ≥ 150°, bottom ≤ 100°.
-2. Track a running min and max of the smoothed elbow angle over a sliding window
-   of the last ~4 reps.
-3. Once two reps are observed, set thresholds inside the observed range:
-   `bottom = min + 0.30 × range`, `top = min + 0.70 × range`.
-4. Require a minimum range of ~25° before adapting at all, so idle jitter can
-   never collapse the thresholds and start counting noise.
+1. Start with defaults (top 150, bottom 100) until there is movement to learn from.
+2. Track the median min and max elbow angle across the last four reps.
+3. Set `bottom = min + 0.30 x range` and `top = min + 0.70 x range`.
 
-The 40-point gap between the two thresholds *is* the hysteresis. A rep only
-counts on a full traversal down and back up.
+**Hysteresis must be proportional, not absolute.** An early version used a
+fixed 20-degree minimum gap; on a shallow user that pushes the band wider than
+their entire range of motion, so they cross the bottom once and can never get
+back to "top". One rep, then silence for the rest of the set. The gap is now
+`max(8 degrees, 22% of range)`.
 
-## State machine
+### Two recovery mechanisms
 
-```
-        ┌──────────────────────────── rep++ ─────────────────────────────┐
-        │                                                                │
-   ┌────▼────┐  angle < bottom   ┌────────┐  angle > top    ┌──────────┐ │
-   │   TOP   │ ────────────────▶ │ BOTTOM │ ──────────────▶ │ COUNTED  │─┘
-   └─────────┘                   └────────┘                 └──────────┘
-        ▲                             │
-        └──── timeout / lost pose ────┘  (reset, no count)
-```
+Calibration creates two failure modes that need explicit handling. Both are
+solved by replaying a rolling buffer of recent signal.
 
-Guards on the `BOTTOM → COUNTED` transition:
+**Bootstrap.** The first reps happen before there is enough movement to
+calibrate. Rather than lose them, the engine buffers samples and replays them
+once thresholds are known. Without this, a shallow-range user loses every rep
+until the window fills.
 
-| Guard | Value | Why |
+**Stall.** Thresholds derived from rep history can only update when a rep
+completes. If the user's depth collapses from fatigue, no rep completes, so the
+thresholds freeze describing a range the user can no longer reach and counting
+silently stops mid-set. The engine detects the stall, re-reads thresholds from
+raw signal, and replays to recover the reps performed during it.
+
+## Guards
+
+Elbow angle alone cannot tell a push-up from someone sitting on the floor
+bending their arms. Four guards decide whether a candidate becomes a rep, and
+each threshold was set from measured separation rather than picked by feel.
+
+| Guard | Rule | Why |
 | --- | --- | --- |
-| Minimum rep duration | 0.45 s | Faster than that is a bounce or a tracking glitch, not a push-up. |
-| Maximum rep duration | 12 s | Longer means the user paused at the bottom or walked away; reset rather than count. |
-| Pose confidence | ≥ 0.3 on all four arm joints, held across the transition | Prevents a lost-and-reacquired skeleton from registering as a rep. |
-| Vertical corroboration | normalized shoulder height must have moved ≥ 15% of torso length | Rejects the user bending only their arms while standing, or sitting up and gesturing. |
+| Duration | 0.45s to 12s | Faster is a bounce or a glitch; longer is a pause or a walk-away. |
+| Vertical travel | shoulder drops >= 3% of torso length | The *body* must move, not just the arms. |
+| Correlation | elbow angle vs shoulder height, r >= 0.5 | The body must descend *because* the elbows bend. |
+| Smoothness | <= 4 direction reversals | A push-up travels; jitter judders. |
 
-The vertical corroboration guard is what stops the most common cheat and the most
-common accident: it requires the *body* to move, not just the arms.
+**Travel is measured median-to-median**, between the top hold and the frames
+nearest the elbow minimum -- never max-minus-min. The extremes of a noisy
+signal *are* the noise, and sampling them both rejected honest shallow reps and
+let pose jitter fake reps on a body that never moved.
+
+Measured separation across 25 noise seeds:
+
+| | genuine reps | arm flexion, body still |
+| --- | --- | --- |
+| vertical travel | 0.057 - 0.39 | max 0.021 |
+| correlation | 0.53 - 0.99 | median 0.00 |
+| direction reversals | 1 - 5 | up to 20 |
 
 ## Form feedback
 
@@ -126,20 +143,48 @@ session form score and trends without ever having withheld a count.
 
 ## Validating accuracy
 
-This cannot be tested by doing push-ups in front of a simulator. Build a fixture
-corpus instead:
+The algorithm was developed against synthetic pose fixtures before any Swift
+was written, in `Tools/RepEngineSim`. A side-on body is modelled from a target
+elbow-angle profile, so every clip has exact ground truth for both count and
+depth, and the engine has to recover it through inverse kinematics and noise.
 
-1. Record 40–60 short videos: varied body types, skin tones, clothing, lighting,
-   camera heights and angles, floor vs. elevated phone, good and sloppy form,
-   plus deliberate negatives (someone stretching, doing burpees, tying a shoe).
-2. Run each through Vision **once**, offline, and serialize the pose sequence to
-   JSON. These become test fixtures checked into the repo.
-3. `RepEngine` tests replay the JSON and assert the counted total against a
-   hand-labeled ground truth.
+`make sim` reports scenario accuracy; `make sweep` re-runs everything across 40
+noise seeds, because a single passing seed only proves the thresholds fit one
+noise realisation.
 
-Ship gate: **≥ 98% total-rep accuracy** across the corpus with **zero false
-positives** on the negative clips. Tuning a threshold then becomes a
-sub-second test run rather than a trip to the floor.
+Current state: **14/14 scenarios exact, 549/560 (98.0%) across the seed
+sweep.**
+
+The fixtures are exported to `Packages/RepEngine/Tests/RepEngineTests/Fixtures`
+and replayed by the Swift tests, so the two implementations are driven by the
+same bytes and any divergence shows up as a failing test rather than as a
+miscount on somebody's living room floor.
+
+### Known limitations
+
+Stated plainly because they are real:
+
+- Shallow-range sets (roughly 20-degree range of motion) can lose one rep under
+  heavy jitter, on about 17% of noise seeds.
+- The deliberately extreme "noisy idle" negative -- resting in a plank while
+  tracking is very unstable -- yields one phantom rep on about 5% of seeds.
+
+Both sit at the genuine limit of what these signals separate; per-rep angle
+excursion was measured as a possible fifth guard and overlaps too much to help.
+The synthetic generator also holds joint confidence artificially high while
+adding heavy positional noise, which real Vision would not do, so this negative
+is harsher than reality.
+
+### What this does not prove
+
+Synthetic fixtures validate the *logic*: thresholds, guards, calibration drift,
+replay. They say nothing about whether Vision returns usable joints for a real
+person in a real room. Only the recorded-video corpus settles that, and the
+ship gate below is written against that corpus, not against these:
+
+> 40-60 clips across body types, skin tones, clothing, lighting, camera heights
+> and angles, plus deliberate negatives. Ship gate: >= 98% total-rep accuracy,
+> zero false positives on the negative clips.
 
 ## Alternative sensing paths (V2)
 

@@ -40,9 +40,12 @@ anything. Prune samples older than a year if size ever becomes a concern.
 `ProgramDay`: `programID`, `dayIndex`, `prescription` (array of set targets),
 `isRecoveryDay`, `notes`.
 
-Built-in programs ship as JSON in the bundle and are seeded on first launch —
-not hard-coded in Swift — so a program can be tuned without an App Store release
-once remote config exists.
+Built-in programs are generated from a shape in `TrainingEngine`, not written
+out day by day: a Road to 100 spelled out longhand is 300+ literals nobody will
+re-tune, and tests can assert properties of a generator (it progresses, it
+rests, it reaches its target) that a wall of numbers could only assert by
+transcription. Moving them to bundled JSON is worth doing once remote tuning
+without an App Store release becomes valuable.
 
 ### ProgramEnrollment
 `programID`, `startedAt`, `currentDayIndex`, `completedDayIndices`,

@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Runs anywhere, no Xcode needed. This is the job that guards the counting
+  # algorithm: it re-derives the accuracy numbers rather than trusting a
+  # figure written down in a doc.
+  reference-engine:
+    name: Reference engine accuracy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Scenario accuracy
+        run: python3 run.py
+        working-directory: Tools/RepEngineSim
+      - name: Noise sweep across seeds
+        run: python3 -c "import sys; sys.argv=['run.py']; import run; run.sweep(25)"
+        working-directory: Tools/RepEngineSim
+      - name: Fixtures match the checked-in copies
+        run: |
+          cd Tools/RepEngineSim && python3 run.py --export && cd "$GITHUB_WORKSPACE"
+          git diff --exit-code -- Packages/RepEngine/Tests/RepEngineTests/Fixtures \
+            || (echo "::error::Checked-in fixtures are stale. Run 'make fixtures'." && exit 1)
+
+  packages:
+    name: Swift package tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: RepEngine
+        run: swift test
+        working-directory: Packages/RepEngine
+      - name: PushCore
+        run: swift test
+        working-directory: Packages/PushCore
+      - name: TrainingEngine
+        run: swift test
+        working-directory: Packages/TrainingEngine
+
+  app:
+    name: Build iOS app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project Push.xcodeproj \
+            -scheme Push \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO

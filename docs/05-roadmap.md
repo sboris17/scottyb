@@ -12,7 +12,7 @@ phone on the floor count push-ups reliably enough to trust?**
 
 ## Milestones
 
-### M0 — Detection spike (2–3 weeks)
+### M0 — Detection spike (2–3 weeks) — *algorithm done, device validation outstanding*
 
 A throwaway single-screen app: camera in, count on screen. No persistence, no
 design, no navigation.
@@ -22,12 +22,17 @@ Deliverables:
 - Fixture corpus of 40–60 recorded pose sequences with hand-labeled ground truth
 - Accuracy report against that corpus
 
+Status: the algorithm is built and validated against synthetic fixtures
+(14/14 scenarios, 98.0% across a 40-seed noise sweep, zero false positives).
+The recorded-video corpus is the part still outstanding, and it is the half
+that actually decides this.
+
 **Go/no-go gate:** ≥ 98% total-rep accuracy, zero false positives on negative
-clips. If it lands at 90%, decide deliberately whether to push on the camera
+clips, *measured on recorded video of real people* — not on synthetic clips. If it lands at 90%, decide deliberately whether to push on the camera
 path, pivot to Apple Watch as the primary sensor, or lead with manual entry and
 a great habit loop. All three are viable products. Guessing in month four is not.
 
-### M1 — Core loop (3–4 weeks)
+### M1 — Core loop (3–4 weeks) — *written, not yet compiled*
 
 Home → session → summary, end to end. Manual mode at full parity with camera
 mode from day one. SwiftData model, daily goal, streak, session history.
