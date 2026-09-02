@@ -1,0 +1,54 @@
+import Foundation
+
+/// Reduces a pose frame to the scalars the counter needs, picking whichever
+/// arm the camera can actually see. In a side-on view the far arm is occluded
+/// by the body, so it arrives noisy and low-confidence; taking the better of
+/// the two is most of the robustness here.
+public struct PoseInterpreter {
+    private let tuning: RepEngineTuning
+    private var angleFilter: OneEuroFilter
+    private var heightFilter: OneEuroFilter
+
+    public init(tuning: RepEngineTuning = RepEngineTuning()) {
+        self.tuning = tuning
+        self.angleFilter = OneEuroFilter(minCutoff: 1.2, beta: 0.05)
+        self.heightFilter = OneEuroFilter(minCutoff: 1.0, beta: 0.02)
+    }
+
+    public mutating func signal(from frame: PoseFrame) -> RepSignal {
+        var best: (confidence: Double, side: JointName.Side)?
+        for side in [JointName.Side.left, .right] {
+            guard let shoulder = frame[.shoulder(side)],
+                  let elbow = frame[.elbow(side)],
+                  let wrist = frame[.wrist(side)] else { continue }
+            let confidence = min(shoulder.confidence, min(elbow.confidence, wrist.confidence))
+            if best == nil || confidence > best!.confidence {
+                best = (confidence, side)
+            }
+        }
+
+        guard let choice = best, choice.confidence >= tuning.minJointConfidence,
+              let shoulder = frame[.shoulder(choice.side)],
+              let elbow = frame[.elbow(choice.side)],
+              let wrist = frame[.wrist(choice.side)],
+              let hip = frame[.hip(choice.side)], hip.confidence >= tuning.minJointConfidence,
+              let rawAngle = Geometry.angle(shoulder.position, vertex: elbow.position, wrist.position)
+        else {
+            return .unusable(at: frame.time)
+        }
+
+        var hipAngle: Double?
+        if let knee = frame[.knee(choice.side)], knee.confidence >= tuning.minJointConfidence {
+            hipAngle = Geometry.angle(shoulder.position, vertex: hip.position, knee.position)
+        }
+
+        return RepSignal(
+            time: frame.time,
+            elbowAngle: angleFilter.filter(rawAngle, at: frame.time),
+            shoulderHeight: heightFilter.filter(shoulder.position.y, at: frame.time),
+            torsoLength: shoulder.position.distance(to: hip.position),
+            hipAngle: hipAngle,
+            isConfident: true
+        )
+    }
+}
