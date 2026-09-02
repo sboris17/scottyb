@@ -104,6 +104,22 @@ public struct RepDiagnostics: Sendable {
     public var lastRejection: RepRejection?
     public var rejectionCounts: [String: Int] = [:]
 
+    /// How many times a rep got as far as being judged. The distinction that
+    /// matters most when nothing is counting: zero candidates means the elbow
+    /// angle never swung far enough to look like a rep at all, which is an
+    /// upstream problem (usually the camera is head-on rather than side-on,
+    /// where the arm is foreshortened). A non-zero count with no reps means
+    /// the movement was seen and a specific guard rejected it.
+    public var candidateReps = 0
+
+    /// Widest elbow-angle span seen this session, before any thresholds.
+    public var minAngleSeen = Double.infinity
+    public var maxAngleSeen = -Double.infinity
+
+    public var angleSpanSeen: Double {
+        maxAngleSeen > minAngleSeen ? maxAngleSeen - minAngleSeen : 0
+    }
+
     // Public structs get an internal memberwise init, so the app target
     // cannot construct one without this.
     public init() {}

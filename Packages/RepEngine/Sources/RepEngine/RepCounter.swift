@@ -101,6 +101,8 @@ public final class RepCounter {
     private func recordDiagnostics(_ signal: RepSignal) {
         diagnostics.elbowAngle = signal.elbowAngle
         diagnostics.torsoCentre = signal.torsoCentre
+        diagnostics.minAngleSeen = min(diagnostics.minAngleSeen, signal.elbowAngle)
+        diagnostics.maxAngleSeen = max(diagnostics.maxAngleSeen, signal.elbowAngle)
         diagnostics.torsoLength = signal.torsoLength
         diagnostics.hipAngle = signal.hipAngle
         diagnostics.isConfident = signal.isConfident
@@ -293,6 +295,7 @@ public final class RepCounter {
         // negated depth keeps the expected correlation positive.
         let correlation = Geometry.correlation(zip(repSamples.map(\.angle), depths.map { -$0 }).map { ($0, $1) })
         let reversals = directionReversals(depths)
+        diagnostics.candidateReps += 1
         diagnostics.lastTravel = travel
         diagnostics.lastCorrelation = correlation
         diagnostics.lastReversals = reversals

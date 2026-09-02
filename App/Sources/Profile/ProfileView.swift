@@ -51,6 +51,7 @@ struct ProfileView: View {
                 Section {
                     Toggle("Show counting debug", isOn: $showCountingDebug)
                     Toggle("Enable accounts (preview)", isOn: $enableAccounts)
+                    Button("Reset all progress", role: .destructive) { store.resetProgress() }
                 } header: {
                     Text("Testing")
                 } footer: {

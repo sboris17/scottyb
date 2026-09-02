@@ -127,6 +127,17 @@ final class Store {
 
     @discardableResult
     func record(_ result: SessionResult) -> [Achievement] {
+        // A session where nothing was counted is not a workout, and recording
+        // it does real damage: it advances the program a day and tells the
+        // adaptation engine the prescription was too hard. Several failed
+        // camera attempts in a row drive the targets down to nothing, so the
+        // app appears to break in a second, unrelated-looking way.
+        guard result.totalReps > 0 else {
+            pendingCelebrations = []
+            justSetPersonalRecord = false
+            return []
+        }
+
         let previousBestSet = records.bestSet
 
         let session = Session(source: result.source, countingMode: result.countingMode)
@@ -208,6 +219,24 @@ final class Store {
             formScore: nil
         )
         record(result)
+    }
+
+    /// Wipes local progress. Testing aid: several zero-rep sessions can leave
+    /// an enrollment with a collapsed adaptation offset, and starting clean is
+    /// faster than reasoning about it.
+    func resetProgress() {
+        for session in (try? context.fetch(FetchDescriptor<Session>())) ?? [] { context.delete(session) }
+        for set in (try? context.fetch(FetchDescriptor<WorkoutSet>())) ?? [] { context.delete(set) }
+        for sample in (try? context.fetch(FetchDescriptor<RepSample>())) ?? [] { context.delete(sample) }
+        for unlock in (try? context.fetch(FetchDescriptor<AchievementUnlock>())) ?? [] { context.delete(unlock) }
+        for enrollment in (try? context.fetch(FetchDescriptor<ProgramEnrollment>())) ?? [] {
+            enrollment.currentDayIndex = 0
+            enrollment.completedDayIndices = []
+            enrollment.adaptationOffset = 0
+            enrollment.completedAt = nil
+        }
+        save()
+        refresh()
     }
 
     /// Skips a rest day forward without recording a workout, so a prescribed

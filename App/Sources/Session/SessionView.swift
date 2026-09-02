@@ -228,6 +228,17 @@ private struct CountingView: View {
                     }
                     .padding(.top, 8)
 
+                if let advice = CountingCoach.advice(for: model.diagnostics,
+                                                    countedReps: model.repsThisSet) {
+                    Text(advice)
+                        .font(Push.Typography.body)
+                        .foregroundStyle(Push.Palette.flame)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                        .transition(.opacity)
+                }
+
                 if showDebug {
                     DebugOverlay(diagnostics: model.diagnostics,
                                  frameRate: model.frameRate,

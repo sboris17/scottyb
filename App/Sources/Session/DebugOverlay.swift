@@ -20,6 +20,11 @@ struct DebugOverlay: View {
             header
 
             row("elbow", String(format: "%.0f°", diagnostics.elbowAngle))
+            row("angle seen", diagnostics.angleSpanSeen > 0
+                ? String(format: "%.0f° span", diagnostics.angleSpanSeen) : "—")
+            // Zero candidates means no rep was ever judged, which is a
+            // completely different problem from a rep being rejected.
+            row("attempted", "\(diagnostics.candidateReps)")
             row("band", diagnostics.thresholds.isCalibrated
                 ? String(format: "%.0f – %.0f°", diagnostics.thresholds.bottom, diagnostics.thresholds.top)
                 : String(format: "%.0f – %.0f° (default)", diagnostics.thresholds.bottom, diagnostics.thresholds.top))
