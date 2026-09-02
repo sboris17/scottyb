@@ -267,6 +267,13 @@ final class SessionModel {
             countingMode: mode == .camera ? .camera : .manual,
             programSlug: programSlug,
             programDayIndex: programDayIndex,
+            // Sets the user never reached are recorded as zero rather than
+            // dropped, so deliberately stopping early feeds the adaptation
+            // engine as "this was too much". That is the safer of the two
+            // errors: prescribing too little self-corrects the moment they
+            // beat a target, prescribing too much is what makes people quit.
+            // Interruptions do not come through here -- they are resumed or
+            // banked from the draft, which only ever reports sets completed.
             setResults: zip(prescription, completedSets + Array(repeating: 0, count: max(0, prescription.count - completedSets.count)))
                 .map { SetResult(targetReps: $0.targetReps, completedReps: $1) },
             reps: samples.flatMap { $0 },

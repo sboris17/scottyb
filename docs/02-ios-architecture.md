@@ -39,7 +39,7 @@ PushApp/
 └── Packages/
     ├── RepEngine/           # pose → reps. Pure Swift, no UIKit/SwiftUI.
     ├── TrainingEngine/      # program generation + adaptation. Pure Swift.
-    ├── PushCore/             # SwiftData models, repositories, derived stats
+    ├── PushCore/             # SwiftData models, derived stats, session drafts
     └── PushUI/              # design tokens, rings, big-number type, haptics
 ```
 
@@ -81,8 +81,13 @@ Rules that keep it frictionless:
   the floor and cannot read the screen at the bottom of a rep. Every rep gets a
   light haptic; milestones get a distinct one; count is announced on a
   configurable cadence (every rep / every 5 / silent).
-- **The session survives interruption.** State is checkpointed to SwiftData after
-  every set so a phone call, timer, or backgrounding never costs a workout.
+- **The session survives interruption.** A draft is written after every set, so
+  a phone call, timer, or backgrounding costs at most the set underway. Home
+  offers the workout back with two options — resume, or bank what was already
+  done — and neither throws the reps away. Drafts live in `UserDefaults`, not
+  SwiftData: a half-finished workout must never reach totals, streaks or
+  records, and the surest way to guarantee that is for it not to be in the
+  database at all.
 
 ## Performance and power
 
