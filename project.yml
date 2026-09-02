@@ -30,8 +30,26 @@ targets:
     sources:
       - path: App/Sources
       - path: App/Resources
+    # XcodeGen GENERATES this file, so it must be described here in full and
+    # must not be hand-edited: anything written into the file directly is
+    # silently destroyed on the next `xcodegen generate`. It is written to a
+    # gitignored directory so it can never show up as a spurious local change.
     info:
-      path: App/Info.plist
+      path: App/Generated/Info.plist
+      properties:
+        CFBundleDisplayName: PressOn
+        UILaunchScreen: {}
+        # Without this key iOS terminates the app the instant it touches the
+        # camera. It is the difference between the counter working and the app
+        # dying at START, and the build succeeds either way.
+        NSCameraUsageDescription: "PressOn uses the camera to count your push-ups. Video is analysed on your device and immediately discarded - nothing is recorded and nothing is uploaded."
+        # Answers export compliance up front so App Store Connect stops asking
+        # on every upload.
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
     settings:
       base:
         # CHANGE THESE TWO before archiving: the bundle id must be one your
