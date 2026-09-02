@@ -27,11 +27,18 @@ targets:
     platform: iOS
     sources:
       - path: App/Sources
+      - path: App/Resources
     info:
       path: App/Info.plist
     settings:
       base:
+        # CHANGE THESE TWO before archiving: the bundle id must be one your
+        # Apple Developer account owns, and the team is your 10-character Team
+        # ID from developer.apple.com/account (Membership details).
         PRODUCT_BUNDLE_IDENTIFIER: app.push.pushups
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "0.1"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.9"
