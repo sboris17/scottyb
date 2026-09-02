@@ -101,10 +101,21 @@ public final class RepCounter {
     private func recordDiagnostics(_ signal: RepSignal) {
         diagnostics.elbowAngle = signal.elbowAngle
         diagnostics.torsoCentre = signal.torsoCentre
-        diagnostics.minAngleSeen = min(diagnostics.minAngleSeen, signal.elbowAngle)
-        diagnostics.maxAngleSeen = max(diagnostics.maxAngleSeen, signal.elbowAngle)
-        diagnostics.torsoLength = signal.torsoLength
-        diagnostics.hipAngle = signal.hipAngle
+        diagnostics.jointConfidence = signal.jointConfidence
+        // Angle statistics come only from frames that actually measured an
+        // angle. An unusable frame reports zero, and folding that in pins
+        // minAngleSeen to zero for the rest of the session - which reads as a
+        // full-range arm movement that never happened. Every session starts
+        // with unusable frames, so this was not an edge case.
+        if signal.isConfident {
+            diagnostics.usableFrames += 1
+            diagnostics.minAngleSeen = min(diagnostics.minAngleSeen, signal.elbowAngle)
+            diagnostics.maxAngleSeen = max(diagnostics.maxAngleSeen, signal.elbowAngle)
+            diagnostics.torsoLength = signal.torsoLength
+            diagnostics.hipAngle = signal.hipAngle
+        } else {
+            diagnostics.unusableFrames += 1
+        }
         diagnostics.isConfident = signal.isConfident
         diagnostics.thresholds = thresholdsModel.current
         switch state {

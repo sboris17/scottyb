@@ -20,6 +20,17 @@ struct DebugOverlay: View {
             header
 
             row("elbow", String(format: "%.0f°", diagnostics.elbowAngle))
+            // The gate that silently discards frames. A green skeleton proves
+            // Vision found joints, not that they were confident enough to
+            // count with, and those are not the same thing.
+            guardRow("confidence", diagnostics.jointConfidence,
+                     min: tuning.minJointConfidence, format: "%.2f")
+            row("frames used", diagnostics.usableFrames + diagnostics.unusableFrames == 0
+                ? "—"
+                : String(format: "%.0f%%  (%d/%d)",
+                         diagnostics.usableFrameFraction * 100,
+                         diagnostics.usableFrames,
+                         diagnostics.usableFrames + diagnostics.unusableFrames))
             row("angle seen", diagnostics.angleSpanSeen > 0
                 ? String(format: "%.0f° span", diagnostics.angleSpanSeen) : "—")
             // Zero candidates means no rep was ever judged, which is a

@@ -101,3 +101,51 @@ final class FormCoachTests: XCTestCase {
         XCTAssertEqual(coach.hint(for: rep(index: 5, depth: 130)), .goLower)
     }
 }
+
+/// Diagnostics get read by a person who is trying to work out why nothing
+/// counted, and a wrong number there costs a whole test session. These pin the
+/// two that decide what advice the app gives.
+final class DiagnosticAccountingTests: XCTestCase {
+    private func confident(_ angle: Double, at time: Double) -> RepSignal {
+        RepSignal(time: time, elbowAngle: angle, torsoCentre: Point2D(x: 0.5, y: 0.5),
+                  torsoLength: 0.3, hipAngle: 170, isConfident: true, jointConfidence: 0.8)
+    }
+
+    /// An unusable frame reports an elbow angle of zero because there was no
+    /// arm to measure. Folding that into the session's angle span pinned the
+    /// minimum at zero and made the span read as a full-range movement that
+    /// never happened - and every session starts with unusable frames, so the
+    /// coach could never reach its "camera is head-on" advice.
+    func testUnusableFramesDoNotWidenTheAngleSpan() {
+        let counter = RepCounter()
+        counter.process(.unusable(at: 0))
+        for (i, angle) in [160.0, 158, 162, 159].enumerated() {
+            counter.process(confident(angle, at: 0.1 + Double(i) * 0.1))
+        }
+        counter.process(.unusable(at: 1))
+
+        XCTAssertEqual(counter.diagnostics.angleSpanSeen, 4, accuracy: 0.001,
+                       "span must describe the arm, not the frames where there was no arm")
+        XCTAssertLessThan(counter.diagnostics.angleSpanSeen, 25,
+                          "an arm that barely moved must read as barely moved")
+    }
+
+    func testFrameAccountingSeparatesSeenFromUnseen() {
+        let counter = RepCounter()
+        for i in 0..<3 { counter.process(confident(160, at: Double(i) * 0.1)) }
+        for i in 0..<1 { counter.process(.unusable(at: 1 + Double(i))) }
+
+        XCTAssertEqual(counter.diagnostics.usableFrames, 3)
+        XCTAssertEqual(counter.diagnostics.unusableFrames, 1)
+        XCTAssertEqual(counter.diagnostics.usableFrameFraction, 0.75, accuracy: 1e-9)
+    }
+
+    /// A rejected frame still has to report how confident it was. "Not
+    /// confident enough" is unfalsifiable otherwise: nothing distinguishes a
+    /// frame that missed the gate by a hair from one where nobody was there.
+    func testRejectedFramesStillCarryTheirConfidence() {
+        let counter = RepCounter()
+        counter.process(.unusable(at: 0, confidence: 0.22))
+        XCTAssertEqual(counter.diagnostics.jointConfidence, 0.22, accuracy: 1e-9)
+    }
+}

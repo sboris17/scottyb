@@ -99,6 +99,13 @@ private struct CountingFailurePanel: View {
             Divider().overlay(Push.Palette.track)
 
             detail("Reps judged", "\(diagnostics.candidateReps)")
+            // Separates "the app could not see you" from "the app saw you and
+            // disagreed". Those need opposite fixes, and without this number
+            // there is no way to tell them apart after the fact.
+            detail("Frames it could use",
+                   diagnostics.usableFrames + diagnostics.unusableFrames == 0
+                   ? "none"
+                   : String(format: "%.0f%%", diagnostics.usableFrameFraction * 100))
             detail("Elbow movement seen",
                    diagnostics.angleSpanSeen > 0
                    ? String(format: "%.0f°", diagnostics.angleSpanSeen) : "none")

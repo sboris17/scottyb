@@ -52,9 +52,16 @@ public struct RepSignal: Sendable {
     public var hipAngle: Double?
     public var isConfident: Bool
 
-    public static func unusable(at time: Double) -> RepSignal {
+    /// Weakest confidence among the joints this frame actually needed, kept
+    /// even when the frame was rejected. Without it, "not confident enough"
+    /// is unfalsifiable: there is no way to tell a frame that missed the gate
+    /// by a hair from one where nothing was detected.
+    public var jointConfidence: Double = 0
+
+    public static func unusable(at time: Double, confidence: Double = 0) -> RepSignal {
         RepSignal(time: time, elbowAngle: 0, torsoCentre: Point2D(x: 0, y: 0),
-                  torsoLength: 1, hipAngle: nil, isConfident: false)
+                  torsoLength: 1, hipAngle: nil, isConfident: false,
+                  jointConfidence: confidence)
     }
 }
 
@@ -111,6 +118,17 @@ public struct RepDiagnostics: Sendable {
     /// where the arm is foreshortened). A non-zero count with no reps means
     /// the movement was seen and a specific guard rejected it.
     public var candidateReps = 0
+
+    /// Frame accounting. A high rejection rate points at confidence or
+    /// framing; a low one means frames were fine and the guards disagreed.
+    public var usableFrames = 0
+    public var unusableFrames = 0
+    public var jointConfidence: Double = 0
+
+    public var usableFrameFraction: Double {
+        let total = usableFrames + unusableFrames
+        return total == 0 ? 0 : Double(usableFrames) / Double(total)
+    }
 
     /// Widest elbow-angle span seen this session, before any thresholds.
     public var minAngleSeen = Double.infinity

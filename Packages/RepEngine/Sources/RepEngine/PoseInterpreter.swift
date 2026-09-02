@@ -38,6 +38,10 @@ public struct PoseInterpreter {
         let hipSide: JointName.Side =
             (frame[.hip(.left)]?.confidence ?? 0) >= (frame[.hip(.right)]?.confidence ?? 0) ? .left : .right
 
+        let observed = max(best?.confidence ?? 0,
+                           max(frame[.hip(.left)]?.confidence ?? 0,
+                               frame[.hip(.right)]?.confidence ?? 0))
+
         guard let choice = best, choice.confidence >= tuning.minJointConfidence,
               let shoulder = frame[.shoulder(choice.side)],
               let elbow = frame[.elbow(choice.side)],
@@ -45,7 +49,7 @@ public struct PoseInterpreter {
               let hip = frame[.hip(hipSide)], hip.confidence >= tuning.minJointConfidence,
               let rawAngle = Geometry.angle(shoulder.position, vertex: elbow.position, wrist.position)
         else {
-            return .unusable(at: frame.time)
+            return .unusable(at: frame.time, confidence: observed)
         }
 
         var hipAngle: Double?
@@ -65,7 +69,8 @@ public struct PoseInterpreter {
                                  y: centreFilterY.filter(centre.y, at: frame.time)),
             torsoLength: shoulder.position.distance(to: hip.position),
             hipAngle: hipAngle,
-            isConfident: true
+            isConfident: true,
+            jointConfidence: min(choice.confidence, hip.confidence)
         )
     }
 }

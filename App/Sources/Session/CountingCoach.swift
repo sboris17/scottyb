@@ -9,8 +9,14 @@ enum CountingCoach {
     static func advice(for d: RepDiagnostics, countedReps: Int) -> String? {
         guard countedReps == 0 else { return nil }
 
-        if !d.isConfident {
-            return "Can't see you. Move back a little, or turn on more light."
+        // Judge visibility over the whole session rather than the single
+        // frame that happened to be current. Tracking blinks constantly, and
+        // one dropped frame is not a reason to tell someone to move.
+        if d.usableFrameFraction < 0.5 {
+            if d.jointConfidence < 0.1 {
+                return "Can't see you at all. Move back so your whole body is in frame."
+            }
+            return "Only half seeing you. More light, or a plainer background behind you."
         }
 
         // Nothing ever got as far as being judged, so the arm never appeared
