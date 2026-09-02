@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Copy this file to Supabase.plist and fill in both values.
+         Supabase.plist is gitignored so your project keys are never committed.
+         Both come from the Supabase dashboard: Project Settings -> API.
+         The anon key is safe to ship in a client - it grants nothing on its
+         own. Row-level security is what protects the data. See
+         Packages/PushSync/schema.sql. Never put the service_role key here. -->
+    <key>SupabaseURL</key>
+    <string>https://YOUR-PROJECT-REF.supabase.co</string>
+    <key>SupabaseAnonKey</key>
+    <string>YOUR-ANON-PUBLIC-KEY</string>
+</dict>
+</plist>

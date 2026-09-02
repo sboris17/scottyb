@@ -44,6 +44,9 @@ jobs:
       - name: TrainingEngine
         run: swift test
         working-directory: Packages/TrainingEngine
+      - name: PushSync
+        run: swift test
+        working-directory: Packages/PushSync
 
   app:
     name: Build iOS app
