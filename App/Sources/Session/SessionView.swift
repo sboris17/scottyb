@@ -14,11 +14,14 @@ struct SessionContainerView: View {
     @State private var cameraError: String?
     @State private var summary: IdentifiedResult?
 
+    private let drafts = SessionDraftStore()
+
     init(launch: SessionLaunch) {
         _model = State(initialValue: SessionModel(prescription: launch.prescription,
                                                   source: launch.source,
                                                   programSlug: launch.programSlug,
-                                                  programDayIndex: launch.programDayIndex))
+                                                  programDayIndex: launch.programDayIndex,
+                                                  resuming: launch.resuming))
     }
 
     var body: some View {
@@ -62,6 +65,8 @@ struct SessionContainerView: View {
     }
 
     private func startCamera() {
+        model.onCheckpoint = { [drafts] draft in drafts.save(draft) }
+        model.onSessionEnded = { [drafts] in drafts.clear() }
         camera.onFrame = { frame in model.ingest(frame) }
         camera.onFailure = { error in
             cameraError = error.localizedDescription

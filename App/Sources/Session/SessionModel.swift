@@ -50,19 +50,45 @@ final class SessionModel {
     private var lastConfidentFrame: Date?
     private var restTimer: Timer?
 
+    /// Called after every completed set so the workout survives being
+    /// interrupted, and once more when the session ends so the draft is
+    /// cleared rather than offered back to the user.
+    var onCheckpoint: ((SessionDraft) -> Void)?
+    var onSessionEnded: (() -> Void)?
+
     /// How long pose can be unusable before we stop nagging and offer manual.
     private let manualFallbackAfter: TimeInterval = 5
 
     init(prescription: [SetPrescription],
          source: SessionSource = .justPush,
          programSlug: String? = nil,
-         programDayIndex: Int? = nil) {
+         programDayIndex: Int? = nil,
+         resuming draft: SessionDraft? = nil) {
         // "Just Push" has no prescription: one open-ended set.
         self.prescription = prescription.isEmpty ? [SetPrescription(targetReps: 0, restSeconds: 0)] : prescription
         self.source = source
         self.programSlug = programSlug
         self.programDayIndex = programDayIndex
         self.samples = Array(repeating: [], count: self.prescription.count)
+
+        if let draft {
+            // Those reps happened. Pick up from the set after the last one
+            // that was banked rather than starting the workout over.
+            completedSets = Array(draft.completedSets.prefix(self.prescription.count))
+            startedAt = draft.startedAt
+        }
+    }
+
+    /// Builds the resume snapshot from wherever the session currently is.
+    private var draft: SessionDraft {
+        SessionDraft(startedAt: startedAt,
+                     source: source,
+                     countingMode: mode == .camera ? .camera : .manual,
+                     programSlug: programSlug,
+                     programDayIndex: programDayIndex,
+                     targets: prescription.map(\.targetReps),
+                     restSeconds: prescription.map(\.restSeconds),
+                     completedSets: completedSets)
     }
 
     // MARK: - Derived
@@ -98,7 +124,8 @@ final class SessionModel {
         self.mode = mode
         startedAt = Date()
         Feedback.shared.prepare()
-        phase = .counting(setIndex: 0)
+        // Resuming starts at the set after the last one banked.
+        phase = .counting(setIndex: min(completedSets.count, prescription.count - 1))
         repsThisSet = 0
         engine.reset()
     }
@@ -180,6 +207,7 @@ final class SessionModel {
         guard case .counting(let index) = phase else { return }
         completedSets.append(repsThisSet)
         samples[min(index, samples.count - 1)] = engine.reps
+        onCheckpoint?(draft)
         Feedback.shared.setComplete()
         repsThisSet = 0
         engine.reset()
@@ -225,6 +253,7 @@ final class SessionModel {
             completedSets.append(repsThisSet)
             repsThisSet = 0
         }
+        onSessionEnded?()
         phase = .finished
     }
 

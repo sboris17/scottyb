@@ -192,6 +192,24 @@ final class Store {
         }
     }
 
+    /// Banks an interrupted workout without resuming it. Those reps happened,
+    /// so the only wrong answer is to throw them away.
+    func record(draft: SessionDraft) {
+        let result = SessionResult(
+            startedAt: draft.startedAt,
+            endedAt: Date(),
+            source: draft.source,
+            countingMode: draft.countingMode,
+            programSlug: draft.programSlug,
+            programDayIndex: draft.programDayIndex,
+            setResults: zip(draft.targets, draft.completedSets)
+                .map { SetResult(targetReps: $0, completedReps: $1) },
+            reps: [],
+            formScore: nil
+        )
+        record(result)
+    }
+
     /// Skips a rest day forward without recording a workout, so a prescribed
     /// recovery day still moves the program along.
     func acknowledgeRecoveryDay() {

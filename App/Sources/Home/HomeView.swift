@@ -10,6 +10,8 @@ import TrainingEngine
 struct HomeView: View {
     @Environment(Store.self) private var store
     @State private var activeSession: SessionLaunch?
+    @State private var resumable: SessionDraft?
+    private let drafts = SessionDraftStore()
 
     private var workout: ProgramDay? { store.todaysWorkout }
 
@@ -17,6 +19,7 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: Push.Metrics.gutter) {
+                    if let draft = resumable { resumeCard(draft) }
                     todayCard
                     if workout?.isRecoveryDay == true {
                         recoveryCard
@@ -35,11 +38,43 @@ struct HomeView: View {
             }
             .background(Push.Palette.background)
             .navigationTitle("Today")
+            .onAppear { resumable = drafts.load() }
             .fullScreenCover(item: $activeSession) { launch in
                 SessionContainerView(launch: launch)
                     .environment(store)
             }
         }
+    }
+
+    /// An interrupted workout is offered back, never silently dropped and
+    /// never silently resumed.
+    private func resumeCard(_ draft: SessionDraft) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("UNFINISHED WORKOUT")
+                .font(Push.Typography.caption).tracking(2)
+                .foregroundStyle(Push.Palette.flame)
+            Text("\(draft.totalReps) push-ups over \(draft.completedSets.count) set\(draft.completedSets.count == 1 ? "" : "s")")
+                .font(Push.Typography.headline)
+                .foregroundStyle(Push.Palette.textPrimary)
+            HStack(spacing: 10) {
+                SecondaryButton("Save it") {
+                    store.record(draft: draft)
+                    drafts.clear()
+                    resumable = nil
+                }
+                PrimaryButton("Resume") {
+                    activeSession = SessionLaunch(
+                        prescription: zip(draft.targets, draft.restSeconds)
+                            .map { SetPrescription(targetReps: $0, restSeconds: $1) },
+                        source: draft.source,
+                        programSlug: draft.programSlug,
+                        programDayIndex: draft.programDayIndex,
+                        resuming: draft)
+                    resumable = nil
+                }
+            }
+        }
+        .pushCard()
     }
 
     private func programLaunch() -> SessionLaunch {
@@ -137,4 +172,5 @@ struct SessionLaunch: Identifiable {
     var source: SessionSource
     var programSlug: String?
     var programDayIndex: Int?
+    var resuming: SessionDraft?
 }
