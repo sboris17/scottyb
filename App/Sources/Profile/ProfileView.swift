@@ -10,6 +10,8 @@ struct ProfileView: View {
     @State private var exportFile: ExportFile?
     @State private var exportError: String?
     @AppStorage("showCountingDebug") private var showCountingDebug = false
+    @AppStorage("enableAccounts") private var enableAccounts = false
+    @State private var authModel = AuthModel()
 
     var body: some View {
         NavigationStack {
@@ -35,8 +37,20 @@ struct ProfileView: View {
                         .foregroundStyle(Push.Palette.textSecondary)
                 }
 
+                if enableAccounts {
+                    Section {
+                        AppleSignInView(model: authModel)
+                            .listRowBackground(Color.clear)
+                    } header: {
+                        Text("Account")
+                    } footer: {
+                        Text("Signing in lets your history sync across devices. Everything works without it.")
+                    }
+                }
+
                 Section {
                     Toggle("Show counting debug", isOn: $showCountingDebug)
+                    Toggle("Enable accounts (preview)", isOn: $enableAccounts)
                 } header: {
                     Text("Testing")
                 } footer: {

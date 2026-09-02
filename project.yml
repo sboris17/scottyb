@@ -20,6 +20,8 @@ packages:
     path: Packages/TrainingEngine
   PushUI:
     path: Packages/PushUI
+  PushSync:
+    path: Packages/PushSync
 
 targets:
   Push:
@@ -45,8 +47,15 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_PREVIEWS: YES
         GENERATE_INFOPLIST_FILE: NO
+        # Sign in with Apple. Leave this commented until the capability is
+        # enabled on the App ID at developer.apple.com (Certificates,
+        # Identifiers & Profiles -> your identifier -> Sign In with Apple).
+        # Uncommenting it before then makes archiving fail with a provisioning
+        # error, which is a miserable way to discover the ordering.
+        # CODE_SIGN_ENTITLEMENTS: App/Push.entitlements
     dependencies:
       - package: RepEngine
       - package: PushCore
       - package: TrainingEngine
       - package: PushUI
+      - package: PushSync
