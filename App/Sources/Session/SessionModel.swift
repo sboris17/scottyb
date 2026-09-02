@@ -39,6 +39,12 @@ final class SessionModel {
     private(set) var startedAt = Date()
     private(set) var restRemaining: TimeInterval = 0
 
+    /// Live engine internals for the debug overlay. Never used for counting.
+    private(set) var diagnostics = RepDiagnostics()
+    private(set) var frameRate: Double = 0
+
+    func updateFrameRate(_ rate: Double) { frameRate = rate }
+
     /// Set when pose has been unusable long enough that we should stop asking
     /// the user to fix framing and just offer the manual path.
     private(set) var shouldOfferManual = false
@@ -149,6 +155,7 @@ final class SessionModel {
         guard case .counting = phase else { return }
 
         let output = engine.process(frame)
+        diagnostics = output.diagnostics
         trackConfidence(for: frame)
 
         // A replay can land more than one rep in a single frame. Stop as soon
@@ -166,7 +173,9 @@ final class SessionModel {
     /// If pose stays unusable, surface a one-tap manual path rather than
     /// leaving the user staring at a counter that will not move.
     private func trackConfidence(for frame: PoseFrame) {
-        let usable = framingCheck.evaluate(frame) == nil
+        let issue = framingCheck.evaluate(frame)
+        framingIssue = issue
+        let usable = issue == nil
         if usable {
             lastConfidentFrame = Date()
             shouldOfferManual = false

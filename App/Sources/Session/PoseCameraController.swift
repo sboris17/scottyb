@@ -11,6 +11,58 @@ import UIKit
 /// Everything here is analysis only: frames are read, measured and discarded.
 /// Nothing is written to disk and nothing leaves the device, which is both the
 /// privacy promise in the permission string and what makes it defensible.
+/// How the camera buffer is rotated before Vision sees it.
+///
+/// This matters more than it looks: the engine's height signal assumes
+/// image-up is world-up, so a wrong rotation turns a shoulder's *vertical*
+/// drop into horizontal movement and the travel guard rejects every rep. The
+/// symptom is a counter that stubbornly reads zero while you do push-ups.
+///
+/// `UIDevice.orientation` reports `.faceUp` or `.unknown` for a phone lying on
+/// the floor, which is exactly where this app asks you to put it, so automatic
+/// cannot be trusted. Hence a manual override that can be cycled from the
+/// debug overlay without a rebuild.
+enum CameraOrientationChoice: String, CaseIterable, Identifiable {
+    case automatic, right, up, down, left
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .automatic: return "Auto"
+        case .right: return "Portrait"
+        case .up: return "Landscape L"
+        case .down: return "Landscape R"
+        case .left: return "Upside down"
+        }
+    }
+
+    var explicit: CGImagePropertyOrientation? {
+        switch self {
+        case .automatic: return nil
+        case .right: return .right
+        case .up: return .up
+        case .down: return .down
+        case .left: return .left
+        }
+    }
+
+    static let storageKey = "app.push.cameraOrientation"
+
+    static var current: CameraOrientationChoice {
+        get {
+            UserDefaults.standard.string(forKey: storageKey)
+                .flatMap(CameraOrientationChoice.init(rawValue:)) ?? .automatic
+        }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: storageKey) }
+    }
+
+    var next: CameraOrientationChoice {
+        let all = Self.allCases
+        return all[(all.firstIndex(of: self)! + 1) % all.count]
+    }
+}
+
 final class PoseCameraController: NSObject {
     enum StartupError: Error, LocalizedError {
         case noCamera, cannotAddInput, cannotAddOutput, denied
@@ -37,6 +89,12 @@ final class PoseCameraController: NSObject {
     private var lastProcessed: CFTimeInterval = 0
     private var startTime: CFTimeInterval?
 
+    /// Rolling analysis rate, for the debug overlay. If this sits well below
+    /// the 15fps target the device is thermally throttled or Vision is
+    /// struggling, and counts will suffer.
+    private(set) var measuredFrameRate: Double = 0
+    private var recentFrameTimes: [CFTimeInterval] = []
+
     /// Delivered on the main queue.
     var onFrame: ((PoseFrame) -> Void)?
     var onFailure: ((Error) -> Void)?
@@ -57,6 +115,13 @@ final class PoseCameraController: NSObject {
         queue.async { [weak self] in
             guard let self else { return }
             do {
+                #if canImport(UIKit)
+                // Without this, UIDevice.orientation never updates and always
+                // reports .unknown.
+                DispatchQueue.main.async {
+                    UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+                }
+                #endif
                 try self.configureIfNeeded()
                 if !self.captureSession.isRunning { self.captureSession.startRunning() }
             } catch {
@@ -111,6 +176,7 @@ final class PoseCameraController: NSObject {
     /// holds only if the buffer is oriented the same way the user is. The
     /// phone is propped on the floor, so this comes from device orientation.
     private var imageOrientation: CGImagePropertyOrientation {
+        if let explicit = CameraOrientationChoice.current.explicit { return explicit }
         #if canImport(UIKit)
         switch UIDevice.current.orientation {
         case .landscapeLeft: return .up
@@ -131,6 +197,12 @@ extension PoseCameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
         let now = CACurrentMediaTime()
         guard now - lastProcessed >= 1 / targetFrameRate else { return }
         lastProcessed = now
+
+        recentFrameTimes.append(now)
+        recentFrameTimes.removeAll { now - $0 > 2 }
+        if let first = recentFrameTimes.first, now > first {
+            measuredFrameRate = Double(recentFrameTimes.count - 1) / (now - first)
+        }
 
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,

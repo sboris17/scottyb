@@ -9,6 +9,7 @@ struct ProfileView: View {
     @State private var haptics = true
     @State private var exportFile: ExportFile?
     @State private var exportError: String?
+    @AppStorage("showCountingDebug") private var showCountingDebug = false
 
     var body: some View {
         NavigationStack {
@@ -32,6 +33,14 @@ struct ProfileView: View {
                     Text("Mid-set you can't see the screen, so the app counts out loud and taps you on every rep.")
                         .font(Push.Typography.caption)
                         .foregroundStyle(Push.Palette.textSecondary)
+                }
+
+                Section {
+                    Toggle("Show counting debug", isOn: $showCountingDebug)
+                } header: {
+                    Text("Testing")
+                } footer: {
+                    Text("Overlays what the counter is seeing during a set \u{2014} angles, thresholds, and which check rejected a rep. Also lets you cycle the camera rotation if counts look wrong.")
                 }
 
                 Section("Your numbers") {

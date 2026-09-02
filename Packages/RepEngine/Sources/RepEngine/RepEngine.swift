@@ -11,6 +11,7 @@ public final class RepEngine {
         public var hint: FormHint?
         public var totalReps: Int
         public var thresholds: RepThresholds
+        public var diagnostics: RepDiagnostics
     }
 
     private var interpreter: PoseInterpreter
@@ -36,7 +37,8 @@ public final class RepEngine {
         let newRep = counter.count > before ? counter.reps.last : nil
         let hint = newRep.flatMap { coach.hint(for: $0) }
         return Output(rep: newRep, hint: hint,
-                      totalReps: counter.count, thresholds: counter.thresholds)
+                      totalReps: counter.count, thresholds: counter.thresholds,
+                      diagnostics: counter.diagnostics)
     }
 
     public func reset() {

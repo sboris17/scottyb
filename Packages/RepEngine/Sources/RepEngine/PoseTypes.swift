@@ -75,3 +75,29 @@ public enum RepRejection: String, Sendable {
     case notSmooth = "not-smooth"
     case lostPose = "lost-pose-mid-rep"
 }
+
+/// A live view of what the counter is currently seeing and deciding.
+///
+/// Purely observational -- nothing here feeds back into counting. It exists so
+/// that "it isn't counting" can be answered on the spot instead of guessed at.
+public struct RepDiagnostics: Sendable {
+    public var elbowAngle: Double = 0
+    public var shoulderHeight: Double = 0
+    public var torsoLength: Double = 0
+    public var hipAngle: Double?
+    public var isConfident = false
+    public var state = "waiting"
+    public var thresholds = RepThresholds(top: 150, bottom: 100, isCalibrated: false)
+
+    /// Guard values from the most recent candidate rep, counted or not.
+    public var lastTravel: Double = 0
+    public var lastCorrelation: Double = 0
+    public var lastReversals: Int = 0
+    public var lastDuration: Double = 0
+    public var lastRejection: RepRejection?
+    public var rejectionCounts: [String: Int] = [:]
+
+    // Public structs get an internal memberwise init, so the app target
+    // cannot construct one without this.
+    public init() {}
+}

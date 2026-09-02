@@ -67,7 +67,10 @@ struct SessionContainerView: View {
     private func startCamera() {
         model.onCheckpoint = { [drafts] draft in drafts.save(draft) }
         model.onSessionEnded = { [drafts] in drafts.clear() }
-        camera.onFrame = { frame in model.ingest(frame) }
+        camera.onFrame = { [camera] frame in
+            model.ingest(frame)
+            model.updateFrameRate(camera.measuredFrameRate)
+        }
         camera.onFailure = { error in
             cameraError = error.localizedDescription
             model.switchToManual()
@@ -160,6 +163,8 @@ struct CameraPreview: UIViewRepresentable {
 private struct CountingView: View {
     @Bindable var model: SessionModel
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("showCountingDebug") private var showDebug = false
+    @State private var orientation = CameraOrientationChoice.current
 
     var body: some View {
         VStack(spacing: 0) {
@@ -190,6 +195,14 @@ private struct CountingView: View {
                     .foregroundStyle(Push.Palette.flame)
                     .padding(.top, 18)
                     .transition(.opacity)
+            }
+
+            if showDebug && model.mode == .camera {
+                DebugOverlay(diagnostics: model.diagnostics,
+                             frameRate: model.frameRate,
+                             framingIssue: model.framingIssue,
+                             orientation: $orientation)
+                    .padding(.top, 12)
             }
 
             Spacer()

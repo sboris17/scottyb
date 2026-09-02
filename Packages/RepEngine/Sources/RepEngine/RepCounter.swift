@@ -26,6 +26,7 @@ public final class RepCounter {
 
     public private(set) var reps: [CountedRep] = []
     public private(set) var rejections: [RepRejection] = []
+    public private(set) var diagnostics = RepDiagnostics()
     public var onRep: ((CountedRep) -> Void)?
 
     private var recent: [RepSignal] = []
@@ -55,9 +56,10 @@ public final class RepCounter {
     // MARK: - Entry point
 
     public func process(_ signal: RepSignal) {
+        recordDiagnostics(signal)
         guard signal.isConfident else {
             // A skeleton that vanishes and comes back must never read as a rep.
-            if state == .bottom { rejections.append(.lostPose) }
+            if state == .bottom { note(.lostPose) }
             resetState()
             return
         }
@@ -94,6 +96,26 @@ public final class RepCounter {
         lastRecalibration = 0
         thresholdsModel = AdaptiveThresholds(tuning: tuning)
         resetState()
+    }
+
+    private func recordDiagnostics(_ signal: RepSignal) {
+        diagnostics.elbowAngle = signal.elbowAngle
+        diagnostics.shoulderHeight = signal.shoulderHeight
+        diagnostics.torsoLength = signal.torsoLength
+        diagnostics.hipAngle = signal.hipAngle
+        diagnostics.isConfident = signal.isConfident
+        diagnostics.thresholds = thresholdsModel.current
+        switch state {
+        case .unknown: diagnostics.state = signal.isConfident ? "waiting for top" : "no pose"
+        case .top: diagnostics.state = "top"
+        case .bottom: diagnostics.state = "descending"
+        }
+    }
+
+    private func note(_ rejection: RepRejection) {
+        rejections.append(rejection)
+        diagnostics.lastRejection = rejection
+        diagnostics.rejectionCounts[rejection.rawValue, default: 0] += 1
     }
 
     private func shouldRecalibrate(at time: Double) -> Bool {
@@ -172,7 +194,7 @@ public final class RepCounter {
             }
 
             if signal.time - repStartTime > tuning.maxRepSeconds {
-                rejections.append(.tooSlow)
+                note(.tooSlow)
                 resetState()
                 return
             }
@@ -242,19 +264,25 @@ public final class RepCounter {
     private func complete(_ signal: RepSignal, suppressAdaptation: Bool) {
         let duration = signal.time - repStartTime
         let travel = verticalTravel(torsoLength: signal.torsoLength)
+        let correlation = Geometry.correlation(repSamples.map { ($0.angle, $0.height) })
+        let reversals = directionReversals()
+        diagnostics.lastTravel = travel
+        diagnostics.lastCorrelation = correlation
+        diagnostics.lastReversals = reversals
+        diagnostics.lastDuration = duration
         let hipDeviation = maxHipDeviation
 
         if duration < tuning.minRepSeconds {
-            rejections.append(.tooFast)
+            note(.tooFast)
         } else if travel < tuning.minVerticalTravel {
             // Arms moved, body did not.
-            rejections.append(.noVerticalTravel)
-        } else if Geometry.correlation(repSamples.map { ($0.angle, $0.height) }) < tuning.minSignalCorrelation {
+            note(.noVerticalTravel)
+        } else if correlation < tuning.minSignalCorrelation {
             // Body moved, but not in time with the arms.
-            rejections.append(.uncorrelated)
-        } else if directionReversals() > tuning.maxDirectionReversals {
+            note(.uncorrelated)
+        } else if reversals > tuning.maxDirectionReversals {
             // The body juddered rather than travelled.
-            rejections.append(.notSmooth)
+            note(.notSmooth)
         } else {
             let rep = CountedRep(index: reps.count + 1,
                                  startedAt: repStartTime,
@@ -265,6 +293,7 @@ public final class RepCounter {
                                  hipDeviation: hipDeviation)
             reps.append(rep)
             lastRepTime = signal.time
+            diagnostics.lastRejection = nil
             if !suppressAdaptation {
                 thresholdsModel.record(minAngle: rep.minElbowAngle, maxAngle: rep.maxElbowAngle)
             }
