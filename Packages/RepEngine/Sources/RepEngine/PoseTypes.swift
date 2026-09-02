@@ -37,17 +37,23 @@ public struct PoseFrame: Sendable {
     public subscript(_ name: JointName) -> JointPoint? { joints[name] }
 }
 
-/// A frame reduced to the scalars the counter actually needs.
+/// A frame reduced to what the counter needs.
+///
+/// The body is tracked as a 2D point - the midpoint of shoulder and hip -
+/// rather than a height. A height assumes the phone knows which way is up,
+/// and a phone propped on a floor does not: iOS reports no useful orientation
+/// for it. Distances and projections are the same under any rotation, so
+/// nothing downstream depends on the camera's angle.
 public struct RepSignal: Sendable {
     public var time: Double
     public var elbowAngle: Double
-    public var shoulderHeight: Double
+    public var torsoCentre: Point2D
     public var torsoLength: Double
     public var hipAngle: Double?
     public var isConfident: Bool
 
     public static func unusable(at time: Double) -> RepSignal {
-        RepSignal(time: time, elbowAngle: 0, shoulderHeight: 0,
+        RepSignal(time: time, elbowAngle: 0, torsoCentre: Point2D(x: 0, y: 0),
                   torsoLength: 1, hipAngle: nil, isConfident: false)
     }
 }
@@ -59,7 +65,8 @@ public struct CountedRep: Sendable, Identifiable {
     public var endedAt: Double
     public var minElbowAngle: Double
     public var maxElbowAngle: Double
-    public var verticalTravel: Double
+    /// Distance the body moved, as a fraction of torso length. Rotation-free.
+    public var bodyTravel: Double
     public var hipDeviation: Double?
 
     public var duration: Double { endedAt - startedAt }
@@ -70,7 +77,7 @@ public struct CountedRep: Sendable, Identifiable {
 public enum RepRejection: String, Sendable {
     case tooFast = "too-fast"
     case tooSlow = "too-slow"
-    case noVerticalTravel = "no-vertical-travel"
+    case noBodyTravel = "no-body-travel"
     case uncorrelated = "uncorrelated"
     case notSmooth = "not-smooth"
     case lostPose = "lost-pose-mid-rep"
@@ -82,7 +89,7 @@ public enum RepRejection: String, Sendable {
 /// that "it isn't counting" can be answered on the spot instead of guessed at.
 public struct RepDiagnostics: Sendable {
     public var elbowAngle: Double = 0
-    public var shoulderHeight: Double = 0
+    public var torsoCentre = Point2D(x: 0, y: 0)
     public var torsoLength: Double = 0
     public var hipAngle: Double?
     public var isConfident = false

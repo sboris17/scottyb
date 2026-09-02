@@ -21,6 +21,9 @@ jobs:
       - name: Scenario accuracy
         run: python3 run.py
         working-directory: Tools/RepEngineSim
+      - name: Rotation invariance
+        run: python3 run.py --rotation
+        working-directory: Tools/RepEngineSim
       - name: Noise sweep across seeds
         run: python3 -c "import sys; sys.argv=['run.py']; import run; run.sweep(25)"
         working-directory: Tools/RepEngineSim

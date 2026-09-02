@@ -27,15 +27,16 @@ public struct RepEngineTuning: Sendable {
     public var maxRepSeconds: Double = 12
     public var minJointConfidence: Double = 0.30
 
-    /// Torso-relative drop required of the shoulder. Measured separation:
-    /// genuine reps 0.057 (22-degree range of motion) to 0.39 (full depth);
-    /// arm flexion with a stationary body tops out at 0.021.
-    public var minVerticalTravel: Double = 0.030
+    /// Torso-relative distance the body must travel. Retuned by grid search
+    /// when the measurement became a rotation-free distance: a distance is
+    /// always positive, so jitter accumulates instead of cancelling and the
+    /// old figure no longer applied.
+    public var minBodyTravel: Double = 0.023
 
     /// Elbow angle and shoulder height must move together, because the body
     /// descends *because* the elbows bend. Real reps sit near +0.95; jitter
     /// moves them independently and lands near zero.
-    public var minSignalCorrelation: Double = 0.50
+    public var minSignalCorrelation: Double = 0.60
 
     /// A push-up is one descent and one ascent, so the height signal reverses
     /// about once. Measured: real reps never exceed 5, jitter reaches 20.

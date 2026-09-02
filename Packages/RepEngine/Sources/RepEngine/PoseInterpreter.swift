@@ -7,12 +7,14 @@ import Foundation
 public struct PoseInterpreter {
     private let tuning: RepEngineTuning
     private var angleFilter: OneEuroFilter
-    private var heightFilter: OneEuroFilter
+    private var centreFilterX: OneEuroFilter
+    private var centreFilterY: OneEuroFilter
 
     public init(tuning: RepEngineTuning = RepEngineTuning()) {
         self.tuning = tuning
         self.angleFilter = OneEuroFilter(minCutoff: 1.2, beta: 0.05)
-        self.heightFilter = OneEuroFilter(minCutoff: 1.0, beta: 0.02)
+        self.centreFilterX = OneEuroFilter(minCutoff: 1.0, beta: 0.02)
+        self.centreFilterY = OneEuroFilter(minCutoff: 1.0, beta: 0.02)
     }
 
     public mutating func signal(from frame: PoseFrame) -> RepSignal {
@@ -42,10 +44,16 @@ public struct PoseInterpreter {
             hipAngle = Geometry.angle(shoulder.position, vertex: hip.position, knee.position)
         }
 
+        // Midpoint of shoulder and hip. Averaging two independently-jittering
+        // joints cancels part of the noise, while a real push-up moves both
+        // together - which is what makes the travel guard trustworthy.
+        let centre = Point2D(x: (shoulder.position.x + hip.position.x) / 2,
+                             y: (shoulder.position.y + hip.position.y) / 2)
         return RepSignal(
             time: frame.time,
             elbowAngle: angleFilter.filter(rawAngle, at: frame.time),
-            shoulderHeight: heightFilter.filter(shoulder.position.y, at: frame.time),
+            torsoCentre: Point2D(x: centreFilterX.filter(centre.x, at: frame.time),
+                                 y: centreFilterY.filter(centre.y, at: frame.time)),
             torsoLength: shoulder.position.distance(to: hip.position),
             hipAngle: hipAngle,
             isConfident: true

@@ -39,10 +39,10 @@ public final class RepCounter {
     private var lastAboveTop: Double?
     private var minAngle: Double = 0
     private var maxAngle: Double = 0
-    private var heightAtTop: Double = 0
+    private var posAtTop: Point2D?
     private var belowFrames = 0
-    private var topHeights: [Double] = []
-    private var repSamples: [(angle: Double, height: Double)] = []
+    private var topPositions: [Point2D] = []
+    private var repSamples: [(angle: Double, position: Point2D)] = []
     private var maxHipDeviation: Double?
 
     public init(tuning: RepEngineTuning = RepEngineTuning()) {
@@ -100,7 +100,7 @@ public final class RepCounter {
 
     private func recordDiagnostics(_ signal: RepSignal) {
         diagnostics.elbowAngle = signal.elbowAngle
-        diagnostics.shoulderHeight = signal.shoulderHeight
+        diagnostics.torsoCentre = signal.torsoCentre
         diagnostics.torsoLength = signal.torsoLength
         diagnostics.hipAngle = signal.hipAngle
         diagnostics.isConfident = signal.isConfident
@@ -152,8 +152,8 @@ public final class RepCounter {
         lastAboveTop = shadow.lastAboveTop
         minAngle = shadow.minAngle
         maxAngle = shadow.maxAngle
-        heightAtTop = shadow.heightAtTop
-        topHeights = shadow.topHeights
+        posAtTop = shadow.posAtTop
+        topPositions = shadow.topPositions
         repSamples = shadow.repSamples
         maxHipDeviation = shadow.maxHipDeviation
         belowFrames = shadow.belowFrames
@@ -172,9 +172,10 @@ public final class RepCounter {
 
         case .top:
             maxAngle = max(maxAngle, signal.elbowAngle)
-            topHeights.append(signal.shoulderHeight)
-            if topHeights.count > 6 { topHeights.removeFirst(topHeights.count - 6) }
-            heightAtTop = Geometry.median(topHeights)
+            topPositions.append(signal.torsoCentre)
+            if topPositions.count > 6 { topPositions.removeFirst(topPositions.count - 6) }
+            posAtTop = Point2D(x: Geometry.median(topPositions.map(\.x)),
+                               y: Geometry.median(topPositions.map(\.y)))
 
             belowFrames = signal.elbowAngle <= bounds.bottom ? belowFrames + 1 : 0
             if belowFrames >= tuning.debounceFrames {
@@ -182,13 +183,13 @@ public final class RepCounter {
                 state = .bottom
                 repStartTime = lastAboveTop ?? signal.time
                 minAngle = signal.elbowAngle
-                repSamples = [(signal.elbowAngle, signal.shoulderHeight)]
+                repSamples = [(signal.elbowAngle, signal.torsoCentre)]
                 maxHipDeviation = signal.hipAngle.map { abs(180 - $0) }
             }
 
         case .bottom:
             minAngle = min(minAngle, signal.elbowAngle)
-            repSamples.append((signal.elbowAngle, signal.shoulderHeight))
+            repSamples.append((signal.elbowAngle, signal.torsoCentre))
             if let deviation = signal.hipAngle.map({ abs(180 - $0) }) {
                 maxHipDeviation = max(maxHipDeviation ?? deviation, deviation)
             }
@@ -207,8 +208,8 @@ public final class RepCounter {
     private func enterTop(_ signal: RepSignal) {
         state = .top
         maxAngle = signal.elbowAngle
-        topHeights = [signal.shoulderHeight]
-        heightAtTop = signal.shoulderHeight
+        topPositions = [signal.torsoCentre]
+        posAtTop = signal.torsoCentre
         repSamples = []
         maxHipDeviation = nil
         belowFrames = 0
@@ -221,40 +222,63 @@ public final class RepCounter {
         lastAboveTop = nil
         minAngle = 0
         maxAngle = 0
-        heightAtTop = 0
+        posAtTop = nil
         belowFrames = 0
-        topHeights = []
+        topPositions = []
         repSamples = []
         maxHipDeviation = nil
     }
 
     // MARK: - Guards
 
-    /// How far the torso dropped, as a fraction of torso length.
+    /// The frames nearest full flexion, reduced to one point.
     ///
-    /// Median-to-median between the top hold and the deepest part of the rep,
-    /// never max-minus-min: the extremes of a noisy signal *are* the noise, and
-    /// taking them is what let jitter fake reps on a body that never moved.
-    /// Restricting the bottom sample to frames near the elbow minimum also
-    /// forces the shoulder's low point to coincide with the elbow's.
-    private func verticalTravel(torsoLength: Double) -> Double {
-        guard !repSamples.isEmpty else { return 0 }
+    /// Median rather than the single deepest frame: the extreme of a noisy
+    /// signal is the noise. Tying it to the elbow minimum also forces the
+    /// body's low point to coincide with the arms' - true of a push-up, and
+    /// not true of jitter.
+    private func deepestPosition() -> Point2D? {
         let angles = repSamples.map(\.angle)
-        let deepest = angles.min() ?? 0
-        let band = deepest + 0.15 * max((angles.max() ?? 0) - deepest, 1e-6)
-        var bottom = repSamples.filter { $0.angle <= band }.map(\.height)
-        if bottom.isEmpty { bottom = [repSamples.map(\.height).min() ?? 0] }
-        return (heightAtTop - Geometry.median(bottom)) / max(torsoLength, 1e-6)
+        guard let deepest = angles.min(), let widest = angles.max() else { return nil }
+        let band = deepest + 0.15 * max(widest - deepest, 1e-6)
+        let near = repSamples.filter { $0.angle <= band }.map(\.position)
+        guard !near.isEmpty else { return nil }
+        return Point2D(x: Geometry.median(near.map(\.x)), y: Geometry.median(near.map(\.y)))
     }
 
-    /// How many times the shoulder changed vertical direction this rep.
-    private func directionReversals() -> Int {
-        let heights = repSamples.map(\.height)
-        guard heights.count >= 6 else { return 0 }
-        let span = max((heights.max() ?? 0) - (heights.min() ?? 0), 1e-9)
+    /// How far the body travelled, as a fraction of torso length.
+    ///
+    /// A distance, so it reads the same however the camera is rotated.
+    private func bodyTravel(torsoLength: Double) -> Double {
+        guard let top = posAtTop, let deepest = deepestPosition() else { return 0 }
+        return top.distance(to: deepest) / max(torsoLength, 1e-6)
+    }
+
+    /// Body travel along the rep's own axis of motion, per frame.
+    ///
+    /// The rep defines its own "down": the direction from where the body rests
+    /// at the top to where it ends up at the bottom. Depth is displacement
+    /// projected onto that axis, so it starts at zero and peaks at the bottom
+    /// no matter how the phone is propped. Nothing here refers to the image's
+    /// x or y axis, which is the entire point - the first build measured the
+    /// descent along image-y, and a phone lying on a floor (where iOS reports
+    /// no useful orientation) read every push-up as sideways movement.
+    private func depthSeries() -> [Double] {
+        guard let top = posAtTop, let deepest = deepestPosition() else { return [] }
+        let axis = Point2D(x: deepest.x - top.x, y: deepest.y - top.y)
+        let length = hypot(axis.x, axis.y)
+        guard length > 1e-9 else { return Array(repeating: 0, count: repSamples.count) }
+        let ux = axis.x / length, uy = axis.y / length
+        return repSamples.map { ($0.position.x - top.x) * ux + ($0.position.y - top.y) * uy }
+    }
+
+    /// How many times the body reversed direction during the rep.
+    private func directionReversals(_ depths: [Double]) -> Int {
+        guard depths.count >= 6, let low = depths.min(), let high = depths.max() else { return 0 }
+        let span = max(high - low, 1e-9)
         var deltas: [Double] = []
-        for i in 0..<(heights.count - 1) {
-            let d = heights[i + 1] - heights[i]
+        for i in 0..<(depths.count - 1) {
+            let d = depths[i + 1] - depths[i]
             if abs(d) > 0.04 * span { deltas.append(d) }   // ignore micro-steps
         }
         guard deltas.count >= 2 else { return 0 }
@@ -263,9 +287,12 @@ public final class RepCounter {
 
     private func complete(_ signal: RepSignal, suppressAdaptation: Bool) {
         let duration = signal.time - repStartTime
-        let travel = verticalTravel(torsoLength: signal.torsoLength)
-        let correlation = Geometry.correlation(repSamples.map { ($0.angle, $0.height) })
-        let reversals = directionReversals()
+        let travel = bodyTravel(torsoLength: signal.torsoLength)
+        let depths = depthSeries()
+        // Depth rises as the elbow angle falls, so pairing the angle against
+        // negated depth keeps the expected correlation positive.
+        let correlation = Geometry.correlation(zip(repSamples.map(\.angle), depths.map { -$0 }).map { ($0, $1) })
+        let reversals = directionReversals(depths)
         diagnostics.lastTravel = travel
         diagnostics.lastCorrelation = correlation
         diagnostics.lastReversals = reversals
@@ -274,9 +301,9 @@ public final class RepCounter {
 
         if duration < tuning.minRepSeconds {
             note(.tooFast)
-        } else if travel < tuning.minVerticalTravel {
+        } else if travel < tuning.minBodyTravel {
             // Arms moved, body did not.
-            note(.noVerticalTravel)
+            note(.noBodyTravel)
         } else if correlation < tuning.minSignalCorrelation {
             // Body moved, but not in time with the arms.
             note(.uncorrelated)
@@ -289,7 +316,7 @@ public final class RepCounter {
                                  endedAt: signal.time,
                                  minElbowAngle: minAngle,
                                  maxElbowAngle: max(maxAngle, signal.elbowAngle),
-                                 verticalTravel: travel,
+                                 bodyTravel: travel,
                                  hipDeviation: hipDeviation)
             reps.append(rep)
             lastRepTime = signal.time

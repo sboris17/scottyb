@@ -1,4 +1,4 @@
-.PHONY: project test test-engine sim sweep fixtures clean
+.PHONY: project test test-engine sim sweep rotation fixtures clean
 
 # Generate the Xcode project (requires: brew install xcodegen)
 project:
@@ -16,6 +16,9 @@ test-engine:
 # The Python reference implementation: accuracy report and noise sweep.
 sim:
 	cd Tools/RepEngineSim && python3 run.py
+
+rotation:
+	cd Tools/RepEngineSim && python3 run.py --rotation
 
 sweep:
 	cd Tools/RepEngineSim && python3 -c "import sys; sys.argv=['run.py']; import run; run.sweep(40)"

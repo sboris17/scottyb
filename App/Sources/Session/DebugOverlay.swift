@@ -31,7 +31,7 @@ struct DebugOverlay: View {
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(Push.Palette.textSecondary)
 
-            guardRow("travel", diagnostics.lastTravel, min: tuning.minVerticalTravel, format: "%.3f")
+            guardRow("travel", diagnostics.lastTravel, min: tuning.minBodyTravel, format: "%.3f")
             guardRow("correlation", diagnostics.lastCorrelation, min: tuning.minSignalCorrelation, format: "%.2f")
             guardRow("duration", diagnostics.lastDuration, min: tuning.minRepSeconds, format: "%.2fs")
             guardRow("reversals", Double(diagnostics.lastReversals),

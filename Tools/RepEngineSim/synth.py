@@ -177,3 +177,23 @@ def build_arm_bend_only(count_cycles=6, seed=11):
             far = {k.replace("left", "right"): (v[0], v[1], 0.40) for k, v in near.items()}
             frames.append((round(t, 4), {**near, **far})); t += dt
     return frames
+
+
+def rotate(frames, degrees, about=(0.5, 0.5)):
+    """Rotate every joint about a point, as a differently-propped phone would.
+
+    The engine must not care. Any dependence on the image's x or y axis shows
+    up here as a changed count, which is exactly the bug that shipped: the
+    travel guard measured a drop along image-y, so a phone lying on a floor -
+    where iOS reports no meaningful orientation - measured a push-up's descent
+    as sideways movement and rejected every rep.
+    """
+    th = math.radians(degrees)
+    cos_t, sin_t = math.cos(th), math.sin(th)
+    ox, oy = about
+
+    def spin(p):
+        dx, dy = p[0] - ox, p[1] - oy
+        return (ox + dx * cos_t - dy * sin_t, oy + dx * sin_t + dy * cos_t, p[2])
+
+    return [(t, {name: spin(p) for name, p in joints.items()}) for t, joints in frames]

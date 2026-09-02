@@ -119,7 +119,32 @@ def run_one(build):
     return frames, counter
 
 
+def rotation_check(angles=(0, 37, 90, 180, 270)):
+    """Counts must not change when the camera is rotated.
+
+    Any dependence on the image's x or y axis shows up here. That dependence
+    is not hypothetical: the first build measured the body's descent along
+    image-y, and a phone propped on a floor - where iOS reports no useful
+    orientation - read every push-up as sideways movement and counted none.
+    """
+    print("rotation invariance: counts must be identical at every angle\n")
+    print(f"{'scenario':22} {'exp':>4} " + " ".join(f"{a:>5}" for a in angles))
+    failures = 0
+    for name, expected, build, _ in SCENARIOS:
+        frames = build(7)
+        counts = [len(repengine.count(synth.rotate(frames, a)).reps) for a in angles]
+        varies = len(set(counts)) > 1
+        if varies:
+            failures += 1
+        print(f"{name:22} {expected:>4} " + " ".join(f"{c:>5}" for c in counts)
+              + ("   <-- VARIES WITH ROTATION" if varies else ""))
+    print(f"\n{len(SCENARIOS) - failures}/{len(SCENARIOS)} scenarios invariant")
+    return 0 if failures == 0 else 1
+
+
 def main():
+    if "--rotation" in sys.argv:
+        return rotation_check()
     if "--sweep" in sys.argv:
         return sweep()
     export = "--export" in sys.argv

@@ -46,7 +46,7 @@ MIN_JOINT_CONFIDENCE = 0.30
 # Elbow angle and shoulder height must move together: the body descends
 # *because* the elbows bend. Jitter moves them independently, so this rejects
 # noise that happens to clear the travel guard. Real reps sit near +0.95.
-MIN_SIGNAL_CORRELATION = 0.50
+MIN_SIGNAL_CORRELATION = 0.60
 # A push-up is one descent and one ascent, so the height signal changes
 # direction about once. Jitter reverses constantly. Measured: real reps never
 # exceed 5 reversals (typically 1), noise reaches 20.
@@ -55,7 +55,11 @@ MAX_DIRECTION_REVERSALS = 4
 # fixture set: genuine reps land at 0.057 (a 22-degree range of motion) up to
 # 0.39 (full depth), while arm-flexion-without-body-movement tops out at 0.021.
 # 0.040 sits between them with roughly 2x margin either side.
-MIN_VERTICAL_TRAVEL = 0.030
+# Body travel required, as a fraction of torso length. Retuned when the
+# measurement became a rotation-free distance: a distance is always positive,
+# so jitter accumulates instead of cancelling, and the old 1D figure no longer
+# applied. Chosen by grid search against the whole fixture set.
+MIN_BODY_TRAVEL = 0.023
 
 DEBOUNCE_FRAMES = 2            # consecutive frames needed to change state
 CALIBRATION_WINDOW = 4         # reps of history feeding the adaptive thresholds
@@ -129,10 +133,19 @@ class OneEuroFilter:
 
 @dataclass
 class Sample:
-    """One frame reduced to the scalars the counter actually needs."""
+    """One frame reduced to what the counter needs.
+
+    The shoulder is kept as a 2D point rather than a height. Measuring the
+    drop along the image's y axis silently assumes the phone knows which way
+    is up -- and a phone propped on a floor does not. Distance is the same in
+    any rotation, so nothing downstream depends on orientation.
+    """
     t: float
     elbow_angle: float
-    shoulder_y: float
+    # Midpoint of shoulder and hip. Two joints averaged rather than one
+    # tracked: their pose jitter is independent so it partly cancels, while a
+    # real push-up moves both together. Kept as a point, never a height.
+    shoulder: tuple[float, float]
     torso_length: float
     hip_angle: float | None
     confident: bool
@@ -216,19 +229,22 @@ class AdaptiveThresholds:
 
         Pose jitter on a static plank can swing the elbow angle far enough to
         look like a range worth calibrating to, and once the thresholds
-        collapse onto noise the engine starts counting noise. Shoulder height
-        is the tell: jitter does not move the torso, push-ups do.
+        collapse onto noise the engine starts counting noise. Shoulder
+        movement is the tell: jitter does not move the torso, push-ups do.
+
+        Measured as distance from the shoulder's own centre, so it holds at
+        any camera rotation.
         """
         if len(self.window) < 8:
             return False
         angles = [s.elbow_angle for s in self.window]
-        heights = sorted(s.shoulder_y for s in self.window)
         torso = median([s.torso_length for s in self.window]) or 1e-6
-        # Percentile span rather than min/max: over a 6-second window, min and
-        # max are by definition the two noisiest samples in it.
-        lo = heights[int(0.10 * (len(heights) - 1))]
-        hi = heights[int(0.90 * (len(heights) - 1))]
-        if (hi - lo) / torso < MIN_VERTICAL_TRAVEL:
+        centre = (median([s.shoulder[0] for s in self.window]),
+                  median([s.shoulder[1] for s in self.window]))
+        # Percentiles rather than min/max: over a 6-second window the extremes
+        # are by definition the two noisiest samples in it.
+        spread = sorted(math.dist(s.shoulder, centre) for s in self.window)
+        if 2 * spread[int(0.90 * (len(spread) - 1))] / torso < MIN_BODY_TRAVEL:
             return False
         return self._apply(min(angles), max(angles))
 
@@ -277,12 +293,11 @@ class RepCounter:
         self.last_above_top = None
         self.min_angle = None
         self.max_angle = None
-        self.height_at_top = None
-        self.min_height = None
+        self.pos_at_top = None
         self.max_hip_deviation = None
         self.below_frames = 0
-        self.top_heights: deque[float] = deque(maxlen=6)
-        self.rep_samples: list[tuple[float, float]] = []  # (angle, height)
+        self.top_positions: deque[tuple[float, float]] = deque(maxlen=6)
+        self.rep_samples: list[tuple[float, tuple[float, float]]] = []
 
     @property
     def thresholds(self):
@@ -355,8 +370,7 @@ class RepCounter:
         self.last_above_top = shadow.last_above_top
         self.min_angle = shadow.min_angle
         self.max_angle = shadow.max_angle
-        self.height_at_top = shadow.height_at_top
-        self.min_height = shadow.min_height
+        self.pos_at_top = shadow.pos_at_top
         self.max_hip_deviation = shadow.max_hip_deviation
 
     # --- machine -----------------------------------------------------------
@@ -374,23 +388,22 @@ class RepCounter:
 
         if self.state == "top":
             self.max_angle = max(self.max_angle, s.elbow_angle)
-            self.top_heights.append(s.shoulder_y)
-            self.height_at_top = median(self.top_heights)
+            self.top_positions.append(s.shoulder)
+            self.pos_at_top = (median([p[0] for p in self.top_positions]),
+                               median([p[1] for p in self.top_positions]))
             self.below_frames = self.below_frames + 1 if s.elbow_angle <= t.bottom else 0
             if self.below_frames >= DEBOUNCE_FRAMES:
                 self.below_frames = 0
                 self.state = "bottom"
                 self.rep_start_time = self.last_above_top or s.t
                 self.min_angle = s.elbow_angle
-                self.min_height = s.shoulder_y
-                self.rep_samples = [(s.elbow_angle, s.shoulder_y)]
+                self.rep_samples = [(s.elbow_angle, s.shoulder)]
                 self.max_hip_deviation = self._hip_deviation(s)
             return
 
         # state == "bottom"
         self.min_angle = min(self.min_angle, s.elbow_angle)
-        self.min_height = min(self.min_height, s.shoulder_y)
-        self.rep_samples.append((s.elbow_angle, s.shoulder_y))
+        self.rep_samples.append((s.elbow_angle, s.shoulder))
         dev = self._hip_deviation(s)
         if dev is not None:
             self.max_hip_deviation = dev if self.max_hip_deviation is None else max(self.max_hip_deviation, dev)
@@ -406,70 +419,107 @@ class RepCounter:
     def _enter_top(self, s: Sample):
         self.state = "top"
         self.max_angle = s.elbow_angle
-        self.top_heights = deque([s.shoulder_y], maxlen=6)
-        self.height_at_top = s.shoulder_y
+        self.top_positions = deque([s.shoulder], maxlen=6)
+        self.pos_at_top = s.shoulder
         self.rep_samples = []
         self.last_above_top = s.t
 
+    def _depth_series(self):
+        """Shoulder travel along its own axis of motion, per frame.
+
+        The rep defines its own "down": the direction from the shoulder's
+        resting position at the top to where it ends up at the bottom. Depth
+        is displacement projected onto that axis, so it is 0 at the top and
+        largest at the bottom no matter how the phone is rotated. Nothing here
+        refers to the image's x or y axis, which is the whole point -- a phone
+        propped on a floor cannot reliably say which way is up.
+        """
+        if not self.rep_samples or self.pos_at_top is None:
+            return []
+        deepest = self._deepest_position()
+        if deepest is None:
+            return []
+        ax, ay = deepest[0] - self.pos_at_top[0], deepest[1] - self.pos_at_top[1]
+        length = math.hypot(ax, ay)
+        if length < 1e-9:
+            return [0.0] * len(self.rep_samples)
+        ux, uy = ax / length, ay / length
+        return [((p[0] - self.pos_at_top[0]) * ux + (p[1] - self.pos_at_top[1]) * uy)
+                for _, p in self.rep_samples]
+
+    def _deepest_position(self):
+        """Median shoulder position across the frames nearest full flexion.
+
+        Median rather than the single deepest frame: the extreme of a noisy
+        signal is the noise. Tying it to the elbow minimum also forces the
+        body's low point to coincide with the arms' -- true of a push-up, not
+        true of jitter.
+        """
+        angles = [a for a, _ in self.rep_samples]
+        if not angles:
+            return None
+        deepest = min(angles)
+        band = deepest + 0.15 * max(max(angles) - deepest, 1e-6)
+        near = [p for a, p in self.rep_samples if a <= band]
+        if not near:
+            return None
+        return (median([p[0] for p in near]), median([p[1] for p in near]))
+
+    def _body_travel(self, torso_length):
+        """How far the body moved, as a fraction of torso length.
+
+        A distance, so it is identical under any rotation of the camera.
+        """
+        deepest = self._deepest_position()
+        if deepest is None or self.pos_at_top is None:
+            return 0.0
+        return math.dist(self.pos_at_top, deepest) / max(torso_length, 1e-6)
+
     @staticmethod
-    def _direction_reversals(pairs):
-        """How many times the shoulder changed vertical direction this rep."""
-        heights = [h for _, h in pairs]
-        if len(heights) < 6:
+    def _direction_reversals(depths):
+        """How many times the body reversed direction during the rep."""
+        if len(depths) < 6:
             return 0
-        span = (max(heights) - min(heights)) or 1e-9
-        deltas = [heights[i + 1] - heights[i] for i in range(len(heights) - 1)]
+        span = (max(depths) - min(depths)) or 1e-9
+        deltas = [depths[i + 1] - depths[i] for i in range(len(depths) - 1)]
         deltas = [d for d in deltas if abs(d) > 0.04 * span]  # ignore micro-steps
         return sum(1 for i in range(len(deltas) - 1) if deltas[i] * deltas[i + 1] < 0)
 
     @staticmethod
     def _correlation(pairs):
-        """Pearson r between elbow angle and shoulder height over the rep."""
+        """Pearson r between the two components of a paired sample."""
         n = len(pairs)
         if n < 4:
             return 0.0
         xs = [a for a, _ in pairs]
-        ys = [h for _, h in pairs]
+        ys = [b for _, b in pairs]
         mx, my = sum(xs) / n, sum(ys) / n
         num = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
         dx = math.sqrt(sum((x - mx) ** 2 for x in xs))
         dy = math.sqrt(sum((y - my) ** 2 for y in ys))
         return 0.0 if dx * dy < 1e-12 else num / (dx * dy)
 
-    def _vertical_travel(self, torso_length):
-        """How far the torso actually dropped, as a fraction of torso length.
-
-        Measured median-to-median between the top hold and the deepest part of
-        the rep, rather than max-minus-min. Extremes of a noisy signal are the
-        noise; taking them is what let pose jitter fake a rep on a body that
-        never moved. Restricting the bottom sample to frames near the elbow
-        minimum also forces the shoulder's low point to coincide with the
-        elbow's -- which is true of a push-up and not true of jitter.
-        """
-        if not self.rep_samples or self.height_at_top is None:
-            return 0.0
-        angles = [a for a, _ in self.rep_samples]
-        deepest = min(angles)
-        band = deepest + 0.15 * max(max(angles) - deepest, 1e-6)
-        bottom = [h for a, h in self.rep_samples if a <= band] or [min(h for _, h in self.rep_samples)]
-        return (self.height_at_top - median(bottom)) / max(torso_length, 1e-6)
-
     def _hip_deviation(self, s: Sample):
         return None if s.hip_angle is None else abs(180.0 - s.hip_angle)
 
     def _try_complete(self, s: Sample, suppress_recalibration=False):
         duration = s.t - self.rep_start_time
-        travel = self._vertical_travel(s.torso_length)
+        travel = self._body_travel(s.torso_length)
+        depths = self._depth_series()
+        angles = [a for a, _ in self.rep_samples]
+        # Depth rises as the elbow angle falls, so pair the angle against
+        # negated depth and the expected correlation stays positive.
+        coupling = self._correlation(list(zip(angles, [-d for d in depths])))
 
         if duration < MIN_REP_SECONDS:
             self.rejections.append("too-fast")
-        elif travel < MIN_VERTICAL_TRAVEL:
+        elif travel < MIN_BODY_TRAVEL:
             # Arms moved, body did not. Not a push-up.
-            self.rejections.append("no-vertical-travel")
-        elif self._correlation(self.rep_samples) < MIN_SIGNAL_CORRELATION:
+            self.rejections.append("no-body-travel")
+        elif coupling < MIN_SIGNAL_CORRELATION:
             # Body moved, but not in time with the arms. Not a push-up.
             self.rejections.append("uncorrelated")
-        elif self._direction_reversals(self.rep_samples) > MAX_DIRECTION_REVERSALS:
+        elif self._direction_reversals(depths) > MAX_DIRECTION_REVERSALS:
             # The body juddered rather than travelled. Tracking noise.
             self.rejections.append("not-smooth")
         else:
@@ -497,7 +547,8 @@ class PoseInterpreter:
 
     def __init__(self, frequency=15.0):
         self.angle_filter = OneEuroFilter()
-        self.height_filter = OneEuroFilter(min_cutoff=1.0, beta=0.02)
+        self.torso_filter_x = OneEuroFilter(min_cutoff=1.0, beta=0.02)
+        self.torso_filter_y = OneEuroFilter(min_cutoff=1.0, beta=0.02)
 
     def sample(self, t, joints):
         best = None
@@ -510,7 +561,7 @@ class PoseInterpreter:
                 best = (conf, side, pts)
 
         if best is None or best[0] < MIN_JOINT_CONFIDENCE:
-            return Sample(t, 0.0, 0.0, 1.0, None, confident=False)
+            return Sample(t, 0.0, (0.0, 0.0), 1.0, None, confident=False)
 
         conf, side, (shoulder, elbow, wrist) = best
         raw_angle = angle_between(shoulder[:2], elbow[:2], wrist[:2])
@@ -527,7 +578,8 @@ class PoseInterpreter:
         return Sample(
             t=t,
             elbow_angle=self.angle_filter.filter(raw_angle, t),
-            shoulder_y=self.height_filter.filter(shoulder[1], t),
+            shoulder=(self.torso_filter_x.filter((shoulder[0] + hip[0]) / 2, t),
+                      self.torso_filter_y.filter((shoulder[1] + hip[1]) / 2, t)),
             torso_length=torso,
             hip_angle=hip_angle,
             confident=True,

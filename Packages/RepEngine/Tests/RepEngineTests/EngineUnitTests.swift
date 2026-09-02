@@ -73,7 +73,7 @@ final class FormCoachTests: XCTestCase {
     private func rep(index: Int = 1, depth: Double = 80, duration: Double = 2, hip: Double? = nil) -> CountedRep {
         CountedRep(index: index, startedAt: 0, endedAt: duration,
                    minElbowAngle: depth, maxElbowAngle: 165,
-                   verticalTravel: 0.3, hipDeviation: hip)
+                   bodyTravel: 0.3, hipDeviation: hip)
     }
 
     func testShallowRepEarnsDepthHint() {

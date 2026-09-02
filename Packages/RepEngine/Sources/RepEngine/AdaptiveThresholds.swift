@@ -53,15 +53,18 @@ struct AdaptiveThresholds {
     @discardableResult
     mutating func recalibrateFromWindow() -> Bool {
         guard window.count >= 8 else { return false }
-        let heights = window.map(\.shoulderHeight)
         let torso = max(Geometry.median(window.map(\.torsoLength)), 1e-6)
 
-        // Percentile span, not min/max: across a six-second window the two
-        // extremes are by definition the noisiest samples in it. Requiring the
-        // body to have moved stops the engine calibrating onto pure jitter and
-        // then dutifully counting it.
-        let span = Geometry.percentile(heights, 0.90) - Geometry.percentile(heights, 0.10)
-        guard span / torso >= tuning.minVerticalTravel else { return false }
+        // How far the body ranges from its own centre, in any direction, so
+        // this holds at any camera rotation. Percentiles rather than the
+        // extremes, which over a six-second window are by definition the two
+        // noisiest samples in it. Requiring real movement stops the engine
+        // calibrating onto pure jitter and then dutifully counting it.
+        let centre = Point2D(x: Geometry.median(window.map(\.torsoCentre.x)),
+                             y: Geometry.median(window.map(\.torsoCentre.y)))
+        let spread = window.map { $0.torsoCentre.distance(to: centre) }
+        let span = 2 * Geometry.percentile(spread, 0.90)
+        guard span / torso >= tuning.minBodyTravel else { return false }
 
         let angles = window.map(\.elbowAngle)
         return apply(low: angles.min() ?? 0, high: angles.max() ?? 0)
