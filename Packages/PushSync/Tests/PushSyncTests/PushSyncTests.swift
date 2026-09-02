@@ -213,6 +213,25 @@ final class SyncServiceTests: XCTestCase {
         XCTAssertTrue(http.requests.isEmpty)
     }
 
+    /// Postgres emits fractional seconds on some rows and not others, and
+    /// Foundation's stock .iso8601 strategy throws on the fractional form -
+    /// a failure that only shows up against real data.
+    func testPullDecodesBothTimestampFormats() async throws {
+        let http = StubHTTPClient()
+        http.body = Data(#"""
+        [{"id":"3F2504E0-4F89-11D3-9A0C-0305E82C3301","user_id":"u",
+          "started_at":"2026-09-01T10:00:00.123456Z","ended_at":"2026-09-01T10:05:00Z",
+          "total_reps":10,"best_set":10,"counting_mode":"camera",
+          "is_verified":true,"program_slug":null}]
+        """#.utf8)
+
+        let sessions = try await SyncService(config: config, auth: signedInAuth(http), http: http)
+            .pull()
+        XCTAssertEqual(sessions.count, 1)
+        XCTAssertNotNil(sessions.first?.startedAt)
+        XCTAssertNotNil(sessions.first?.endedAt)
+    }
+
     func testPullDecodesSessions() async throws {
         let http = StubHTTPClient()
         http.body = Data("""
