@@ -1,5 +1,5 @@
 import XCTest
-@testable import PushKit
+@testable import PushCore
 
 final class StreakTests: XCTestCase {
     private var calendar: Calendar = {

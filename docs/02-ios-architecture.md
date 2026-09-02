@@ -39,7 +39,7 @@ PushApp/
 └── Packages/
     ├── RepEngine/           # pose → reps. Pure Swift, no UIKit/SwiftUI.
     ├── TrainingEngine/      # program generation + adaptation. Pure Swift.
-    ├── PushKit/             # SwiftData models, repositories, derived stats
+    ├── PushCore/             # SwiftData models, repositories, derived stats
     └── PushUI/              # design tokens, rings, big-number type, haptics
 ```
 

@@ -20,7 +20,8 @@ final class FixtureReplayTests: XCTestCase {
     static func jointName(_ raw: String) -> JointName? {
         let parts = raw.split(separator: "_")
         guard parts.count == 2 else { return nil }
-        return JointName(rawValue: parts[0] + parts[1].prefix(1).uppercased() + parts[1].dropFirst())
+        let tail = parts[1]
+        return JointName(rawValue: String(parts[0]) + tail.prefix(1).uppercased() + String(tail.dropFirst()))
     }
 
     static func load(_ name: String) throws -> Fixture {

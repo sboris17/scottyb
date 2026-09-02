@@ -1,0 +1,45 @@
+# XcodeGen spec. This is the source of truth for the app target.
+#
+#   brew install xcodegen && xcodegen generate && open Push.xcodeproj
+#
+# The four packages under Packages/ are plain SwiftPM and need none of this:
+# `swift test` runs the engine, stats and program suites on their own.
+name: Push
+options:
+  bundleIdPrefix: app.push
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  RepEngine:
+    path: Packages/RepEngine
+  PushCore:
+    path: Packages/PushCore
+  TrainingEngine:
+    path: Packages/TrainingEngine
+  PushUI:
+    path: Packages/PushUI
+
+targets:
+  Push:
+    type: application
+    platform: iOS
+    sources:
+      - path: App/Sources
+    info:
+      path: App/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.push.pushups
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_PREVIEWS: YES
+        GENERATE_INFOPLIST_FILE: NO
+    dependencies:
+      - package: RepEngine
+      - package: PushCore
+      - package: TrainingEngine
+      - package: PushUI

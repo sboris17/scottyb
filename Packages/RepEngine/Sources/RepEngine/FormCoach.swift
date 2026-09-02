@@ -24,7 +24,7 @@ public struct FormCoach {
         self.tuning = tuning
     }
 
-    public mutating func hint(for rep: CountedRep, hipAngleSigned: Double? = nil) -> FormHint? {
+    public mutating func hint(for rep: CountedRep) -> FormHint? {
         guard rep.index - lastHintRep >= repsBetweenHints else { return nil }
         guard let hint = evaluate(rep) else { return nil }
         lastHintRep = rep.index

@@ -2,14 +2,14 @@ import XCTest
 @testable import RepEngine
 
 final class GeometryTests: XCTestCase {
-    func testRightAngle() {
+    func testRightAngle() throws {
         let angle = Geometry.angle(Point2D(x: 0, y: 1),
                                    vertex: Point2D(x: 0, y: 0),
                                    Point2D(x: 1, y: 0))
         XCTAssertEqual(try XCTUnwrap(angle), 90, accuracy: 0.001)
     }
 
-    func testStraightArm() {
+    func testStraightArm() throws {
         let angle = Geometry.angle(Point2D(x: 0, y: 2),
                                    vertex: Point2D(x: 0, y: 1),
                                    Point2D(x: 0, y: 0))
@@ -51,11 +51,8 @@ final class AdaptiveThresholdTests: XCTestCase {
         var tuning = RepEngineTuning()
         tuning.minCalibrationRange = 18
         var model = AdaptiveThresholds(tuning: tuning)
-        for i in 0..<10 {
-            let angle = i.isMultiple(of: 2) ? 158.0 : 128.0
-            model.record(minAngle: 128, maxAngle: 158)
-            _ = angle
-        }
+        // A user whose whole range of motion is 128...158 degrees.
+        for _ in 0..<4 { model.record(minAngle: 128, maxAngle: 158) }
         let bounds = model.current
         XCTAssertTrue(bounds.isCalibrated)
         XCTAssertLessThan(bounds.top, 158, "top threshold must sit inside the user's reachable range")
