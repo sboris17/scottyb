@@ -1,6 +1,7 @@
 import SwiftUI
 import PushUI
 import PushCore
+import RepEngine
 
 struct SessionSummaryView: View {
     @Environment(Store.self) private var store
@@ -28,6 +29,10 @@ struct SessionSummaryView: View {
                     StatChip(emoji: "\u{23F1}", value: duration, caption: "Duration")
                     StatChip(emoji: "\u{1F3C6}", value: "\(result.bestSet)", caption: "Best set")
                     StatChip(emoji: "\u{1F525}", value: "\(store.currentStreak)", caption: "Streak")
+                }
+
+                if let diagnostics = result.failureDiagnostics, result.totalReps == 0 {
+                    CountingFailurePanel(diagnostics: diagnostics)
                 }
 
                 if store.justSetPersonalRecord {
@@ -65,6 +70,65 @@ struct SessionSummaryView: View {
         .background(Push.Palette.background)
         .onAppear {
             if !store.pendingCelebrations.isEmpty { Feedback.shared.celebrate() }
+        }
+    }
+}
+
+
+/// Shown when a camera session counted nothing.
+///
+/// A bare zero is useless: it does not say whether the app failed to see you,
+/// saw you and disagreed, or saw nothing worth judging. This is the first
+/// moment the phone is back in your hand, so it is the right place to explain.
+private struct CountingFailurePanel: View {
+    let diagnostics: RepDiagnostics
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("NOTHING COUNTED")
+                .font(Push.Typography.caption).tracking(2)
+                .foregroundStyle(Push.Palette.flame)
+
+            if let advice = CountingCoach.advice(for: diagnostics, countedReps: 0) {
+                Text(advice)
+                    .font(Push.Typography.headline)
+                    .foregroundStyle(Push.Palette.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Divider().overlay(Push.Palette.track)
+
+            detail("Reps judged", "\(diagnostics.candidateReps)")
+            detail("Elbow movement seen",
+                   diagnostics.angleSpanSeen > 0
+                   ? String(format: "%.0f°", diagnostics.angleSpanSeen) : "none")
+            if let rejection = diagnostics.lastRejection {
+                detail("Last rejected for", rejection.rawValue)
+            }
+            if !diagnostics.rejectionCounts.isEmpty {
+                detail("Rejections",
+                       diagnostics.rejectionCounts.sorted { $0.key < $1.key }
+                           .map { "\($0.key) x\($0.value)" }.joined(separator: ", "))
+            }
+
+            Text("Nothing was saved — a session with no reps doesn't count as a workout, and won't change your plan.")
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .pushCard()
+    }
+
+    private func detail(_ label: String, _ value: String) -> some View {
+        HStack(alignment: .top) {
+            Text(label)
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textSecondary)
+            Spacer(minLength: 12)
+            Text(value)
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textPrimary)
+                .multilineTextAlignment(.trailing)
         }
     }
 }

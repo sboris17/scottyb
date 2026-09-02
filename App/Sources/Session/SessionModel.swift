@@ -47,6 +47,14 @@ final class SessionModel {
     /// for counting.
     private(set) var lastFrame: PoseFrame?
 
+    /// Diagnostics captured when a set ends having counted nothing, so the
+    /// summary can explain itself once the phone is back in your hand.
+    private(set) var failureDiagnostics: RepDiagnostics?
+
+    private var countingStartedAt: Date?
+    private var lastSpokenAdviceAt: Date?
+    private var spokenAdviceCount = 0
+
     func updateFrameRate(_ rate: Double) { frameRate = rate }
 
     /// Set when pose has been unusable long enough that we should stop asking
@@ -137,6 +145,7 @@ final class SessionModel {
         // Resuming starts at the set after the last one banked.
         phase = .counting(setIndex: min(completedSets.count, prescription.count - 1))
         repsThisSet = 0
+        countingStartedAt = Date()
         engine.reset()
     }
 
@@ -161,6 +170,7 @@ final class SessionModel {
 
         let output = engine.process(frame)
         diagnostics = output.diagnostics
+        speakAdviceIfStuck()
         trackConfidence(for: frame)
 
         // A replay can land more than one rep in a single frame. Stop as soon
@@ -173,6 +183,24 @@ final class SessionModel {
             }
             currentHint = output.hint
         }
+    }
+
+    /// Says the advice out loud when nothing is being counted.
+    ///
+    /// The phone sits several feet away where the screen cannot be read, so
+    /// on-screen diagnostics are no use to the person actually doing the
+    /// push-ups. Rationed hard: three times at most, well spaced, and never
+    /// once a rep has been counted.
+    private func speakAdviceIfStuck() {
+        guard case .counting = phase, repsThisSet == 0, spokenAdviceCount < 3 else { return }
+        let started = countingStartedAt ?? Date()
+        if countingStartedAt == nil { countingStartedAt = started }
+        guard Date().timeIntervalSince(started) > 12 else { return }
+        if let last = lastSpokenAdviceAt, Date().timeIntervalSince(last) < 20 { return }
+        guard let advice = CountingCoach.advice(for: diagnostics, countedReps: repsThisSet) else { return }
+        lastSpokenAdviceAt = Date()
+        spokenAdviceCount += 1
+        Feedback.shared.speak(advice)
     }
 
     /// If pose stays unusable, surface a one-tap manual path rather than
@@ -267,6 +295,10 @@ final class SessionModel {
             completedSets.append(repsThisSet)
             repsThisSet = 0
         }
+        // Capture why nothing was counted, while the engine still knows.
+        if completedSets.allSatisfy({ $0 == 0 }) && mode == .camera {
+            failureDiagnostics = diagnostics
+        }
         onSessionEnded?()
         phase = .finished
     }
@@ -291,7 +323,8 @@ final class SessionModel {
             setResults: zip(prescription, completedSets + Array(repeating: 0, count: max(0, prescription.count - completedSets.count)))
                 .map { SetResult(targetReps: $0.targetReps, completedReps: $1) },
             reps: samples.flatMap { $0 },
-            formScore: FormCoach.sessionScore(samples.flatMap { $0 })
+            formScore: FormCoach.sessionScore(samples.flatMap { $0 }),
+            failureDiagnostics: failureDiagnostics
         )
     }
 }
@@ -306,6 +339,9 @@ struct SessionResult {
     var setResults: [SetResult]
     var reps: [CountedRep]
     var formScore: Double?
+    /// Present only when the camera counted nothing, so the summary can say
+    /// why instead of showing a bare zero.
+    var failureDiagnostics: RepDiagnostics? = nil
 
     var totalReps: Int { setResults.reduce(0) { $0 + $1.completedReps } }
     var bestSet: Int { setResults.map(\.completedReps).max() ?? 0 }
