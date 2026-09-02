@@ -57,11 +57,13 @@ targets:
           - UIInterfaceOrientationLandscapeRight
     settings:
       base:
-        # CHANGE THESE TWO before archiving: the bundle id must be one your
-        # Apple Developer account owns, and the team is your 10-character Team
-        # ID from developer.apple.com/account (Membership details).
-        PRODUCT_BUNDLE_IDENTIFIER: app.push.pushups
-        DEVELOPMENT_TEAM: ""
+        # Committed rather than edited locally. Neither is a secret - a team
+        # ID is readable from any shipped app - and keeping them here means
+        # project.yml never carries uncommitted changes, so it never conflicts
+        # on a pull. Bump CURRENT_PROJECT_VERSION for every TestFlight upload:
+        # App Store Connect rejects a build number it has already accepted.
+        PRODUCT_BUNDLE_IDENTIFIER: com.scottsmanboris.pushreps
+        DEVELOPMENT_TEAM: "FX6Z68JYQ4"
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "1.0"
