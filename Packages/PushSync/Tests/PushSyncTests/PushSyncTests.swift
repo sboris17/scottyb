@@ -157,7 +157,10 @@ final class SupabaseAuthTests: XCTestCase {
                                userID: "u", email: nil)
         let auth = SupabaseAuth(config: config, http: http, storage: InMemorySessionStore(live))
 
-        XCTAssertEqual(try await auth.validAccessToken(), "still-good")
+        // Hoisted out of the assertion: XCTAssert* take autoclosures, which
+        // cannot be async.
+        let token = try await auth.validAccessToken()
+        XCTAssertEqual(token, "still-good")
         XCTAssertTrue(http.requests.isEmpty, "a valid token should not hit the network")
     }
 }
