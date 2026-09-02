@@ -38,6 +38,11 @@ targets:
       path: App/Generated/Info.plist
       properties:
         CFBundleDisplayName: PressOn
+        # Track the build settings so the version lives in one place. Without
+        # these the generated plist hard-codes 1.0, which is why the first
+        # archive read 1.0 while the project said otherwise.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         # Without this key iOS terminates the app the instant it touches the
         # camera. It is the difference between the counter working and the app
@@ -59,8 +64,8 @@ targets:
         DEVELOPMENT_TEAM: ""
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        MARKETING_VERSION: "0.1"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "2"
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_PREVIEWS: YES

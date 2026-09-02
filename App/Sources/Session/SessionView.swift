@@ -37,7 +37,7 @@ struct SessionContainerView: View {
                     model.begin(mode: .manual)
                 }
             case .counting:
-                CountingView(model: model)
+                CountingView(model: model, camera: camera)
             case .resting:
                 RestView(model: model)
             case .finished:
@@ -98,7 +98,20 @@ private struct FramingView: View {
     var body: some View {
         VStack(spacing: 20) {
             CameraPreview(session: camera.captureSession)
+                .overlay { SkeletonOverlay(frame: model.lastFrame) }
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        camera.flipCamera()
+                    } label: {
+                        Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
+                            .font(.title3)
+                            .foregroundStyle(Push.Palette.textPrimary)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                    .padding(12)
+                }
                 .overlay(alignment: .bottom) {
                     if let issue = model.framingIssue {
                         Text(issue.rawValue)
@@ -115,7 +128,7 @@ private struct FramingView: View {
                 Text("Prop your phone up to your side")
                     .font(Push.Typography.title)
                     .foregroundStyle(Push.Palette.textPrimary)
-                Text("It needs to see your shoulders, arms and hips.")
+                Text("Green lines mean it can see you. Tap the camera button to switch front/back.")
                     .font(Push.Typography.body)
                     .foregroundStyle(Push.Palette.textSecondary)
                     .multilineTextAlignment(.center)
@@ -146,7 +159,7 @@ struct CameraPreview: UIViewRepresentable {
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
         view.videoPreviewLayer.session = session
-        view.videoPreviewLayer.videoGravity = .resizeAspectFill
+        view.videoPreviewLayer.videoGravity = .resizeAspect
         return view
     }
 
@@ -162,9 +175,9 @@ struct CameraPreview: UIViewRepresentable {
 
 private struct CountingView: View {
     @Bindable var model: SessionModel
+    let camera: PoseCameraController
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("showCountingDebug") private var showDebug = false
-    @State private var orientation = CameraOrientationChoice.current
+    @AppStorage("showCountingDebug") private var showDebug = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -197,12 +210,30 @@ private struct CountingView: View {
                     .transition(.opacity)
             }
 
-            if showDebug && model.mode == .camera {
-                DebugOverlay(diagnostics: model.diagnostics,
-                             frameRate: model.frameRate,
-                             framingIssue: model.framingIssue,
-                             orientation: $orientation)
-                    .padding(.top, 12)
+            if model.mode == .camera {
+                // A live view of what is being tracked, mid-set. Without it a
+                // count that does not move gives you nothing to act on.
+                CameraPreview(session: camera.captureSession)
+                    .overlay { SkeletonOverlay(frame: model.lastFrame) }
+                    .frame(height: 150)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(alignment: .topTrailing) {
+                        Button { camera.flipCamera() } label: {
+                            Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
+                                .foregroundStyle(Push.Palette.textPrimary)
+                                .padding(8)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        .padding(8)
+                    }
+                    .padding(.top, 8)
+
+                if showDebug {
+                    DebugOverlay(diagnostics: model.diagnostics,
+                                 frameRate: model.frameRate,
+                                 framingIssue: model.framingIssue)
+                        .padding(.top, 8)
+                }
             }
 
             Spacer()

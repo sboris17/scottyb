@@ -11,58 +11,6 @@ import UIKit
 /// Everything here is analysis only: frames are read, measured and discarded.
 /// Nothing is written to disk and nothing leaves the device, which is both the
 /// privacy promise in the permission string and what makes it defensible.
-/// How the camera buffer is rotated before Vision sees it.
-///
-/// This matters more than it looks: the engine's height signal assumes
-/// image-up is world-up, so a wrong rotation turns a shoulder's *vertical*
-/// drop into horizontal movement and the travel guard rejects every rep. The
-/// symptom is a counter that stubbornly reads zero while you do push-ups.
-///
-/// `UIDevice.orientation` reports `.faceUp` or `.unknown` for a phone lying on
-/// the floor, which is exactly where this app asks you to put it, so automatic
-/// cannot be trusted. Hence a manual override that can be cycled from the
-/// debug overlay without a rebuild.
-enum CameraOrientationChoice: String, CaseIterable, Identifiable {
-    case automatic, right, up, down, left
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .automatic: return "Auto"
-        case .right: return "Portrait"
-        case .up: return "Landscape L"
-        case .down: return "Landscape R"
-        case .left: return "Upside down"
-        }
-    }
-
-    var explicit: CGImagePropertyOrientation? {
-        switch self {
-        case .automatic: return nil
-        case .right: return .right
-        case .up: return .up
-        case .down: return .down
-        case .left: return .left
-        }
-    }
-
-    static let storageKey = "app.push.cameraOrientation"
-
-    static var current: CameraOrientationChoice {
-        get {
-            UserDefaults.standard.string(forKey: storageKey)
-                .flatMap(CameraOrientationChoice.init(rawValue:)) ?? .automatic
-        }
-        set { UserDefaults.standard.set(newValue.rawValue, forKey: storageKey) }
-    }
-
-    var next: CameraOrientationChoice {
-        let all = Self.allCases
-        return all[(all.firstIndex(of: self)! + 1) % all.count]
-    }
-}
-
 final class PoseCameraController: NSObject {
     enum StartupError: Error, LocalizedError {
         case noCamera, cannotAddInput, cannotAddOutput, denied
@@ -85,6 +33,14 @@ final class PoseCameraController: NSObject {
     private let videoOutput = AVCaptureVideoDataOutput()
     private let queue = DispatchQueue(label: "app.push.pose", qos: .userInitiated)
     private let request = VNDetectHumanBodyPoseRequest()
+
+    /// Front by default. The app asks you to prop the phone beside you, and
+    /// with the back camera that points the screen away - so you cannot see
+    /// the count, the framing warnings, or anything else while you work. The
+    /// first on-device test was run completely blind for exactly this reason.
+    private(set) var position: AVCaptureDevice.Position = {
+        UserDefaults.standard.string(forKey: "app.push.cameraPosition") == "back" ? .back : .front
+    }()
 
     private var lastProcessed: CFTimeInterval = 0
     private var startTime: CFTimeInterval?
@@ -115,13 +71,6 @@ final class PoseCameraController: NSObject {
         queue.async { [weak self] in
             guard let self else { return }
             do {
-                #if canImport(UIKit)
-                // Without this, UIDevice.orientation never updates and always
-                // reports .unknown.
-                DispatchQueue.main.async {
-                    UIDevice.current.beginGeneratingDeviceOrientationNotifications()
-                }
-                #endif
                 try self.configureIfNeeded()
                 if !self.captureSession.isRunning { self.captureSession.startRunning() }
             } catch {
@@ -144,6 +93,35 @@ final class PoseCameraController: NSObject {
 
     private var isConfigured = false
 
+    /// Swaps between front and back without tearing the session down.
+    func flipCamera() {
+        position = position == .front ? .back : .front
+        UserDefaults.standard.set(position == .back ? "back" : "front",
+                                  forKey: "app.push.cameraPosition")
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.captureSession.beginConfiguration()
+            for input in self.captureSession.inputs { self.captureSession.removeInput(input) }
+            if let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: self.position),
+               let input = try? AVCaptureDeviceInput(device: device),
+               self.captureSession.canAddInput(input) {
+                self.captureSession.addInput(input)
+            }
+            self.captureSession.commitConfiguration()
+            self.configurePreviewMirroring()
+        }
+    }
+
+    /// Mirroring off so the preview matches the buffer Vision analyses. A
+    /// mirrored selfie view would draw the skeleton overlay on the wrong side
+    /// of the screen, which makes the one diagnostic that matters misleading.
+    private func configurePreviewMirroring() {
+        for connection in videoOutput.connections where connection.isVideoMirroringSupported {
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = false
+        }
+    }
+
     private func configureIfNeeded() throws {
         guard !isConfigured else { return }
         captureSession.beginConfiguration()
@@ -153,7 +131,7 @@ final class PoseCameraController: NSObject {
         // accuracy here and costs battery, heat and thermal throttling.
         captureSession.sessionPreset = .vga640x480
 
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
                 ?? AVCaptureDevice.default(for: .video) else {
             throw StartupError.noCamera
         }
@@ -170,24 +148,20 @@ final class PoseCameraController: NSObject {
         captureSession.addOutput(videoOutput)
 
         isConfigured = true
+        configurePreviewMirroring()
     }
 
     /// The engine's height signal assumes image-space "up" is world-up, which
     /// holds only if the buffer is oriented the same way the user is. The
     /// phone is propped on the floor, so this comes from device orientation.
-    private var imageOrientation: CGImagePropertyOrientation {
-        if let explicit = CameraOrientationChoice.current.explicit { return explicit }
-        #if canImport(UIKit)
-        switch UIDevice.current.orientation {
-        case .landscapeLeft: return .up
-        case .landscapeRight: return .down
-        case .portraitUpsideDown: return .left
-        default: return .right
-        }
-        #else
-        return .right
-        #endif
-    }
+    /// The buffer is handed to Vision unrotated.
+    ///
+    /// It used to be rotated to make image-up match world-up, because the
+    /// counting maths depended on that. It no longer does - the engine works
+    /// from distances and projections that are the same at any rotation - so
+    /// there is nothing left to get wrong here, and Vision's coordinates line
+    /// up exactly with the preview the skeleton overlay is drawn on.
+    private var imageOrientation: CGImagePropertyOrientation { .up }
 }
 
 extension PoseCameraController: AVCaptureVideoDataOutputSampleBufferDelegate {

@@ -11,14 +11,13 @@ cd scottyb
 git checkout claude/pushup-app-concept-65wnld
 ```
 
-## 1. Two values only you know
+## 1. Bump the build number
 
-In `project.yml`:
-
-- `PRODUCT_BUNDLE_IDENTIFIER` — must be a bundle id your Apple Developer
-  account owns, e.g. `com.yourname.push`
-- `DEVELOPMENT_TEAM` — your 10-character Team ID from
-  developer.apple.com/account, under Membership details
+The bundle id and team are already committed, so there is nothing to edit
+before a normal build. The one thing that must change for every upload is
+`CURRENT_PROJECT_VERSION` in `project.yml` — App Store Connect rejects a
+build number it has already accepted, and it does so *after* the upload,
+which is a slow way to find out.
 
 ## 2. Generate and open
 

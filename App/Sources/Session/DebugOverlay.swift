@@ -12,7 +12,6 @@ struct DebugOverlay: View {
     let diagnostics: RepDiagnostics
     let frameRate: Double
     let framingIssue: FramingIssue?
-    @Binding var orientation: CameraOrientationChoice
 
     private let tuning = RepEngineTuning()
 
@@ -50,7 +49,6 @@ struct DebugOverlay: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            orientationControl
         }
         .padding(10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -115,25 +113,4 @@ struct DebugOverlay: View {
         }
     }
 
-    private var orientationControl: some View {
-        Button {
-            orientation = orientation.next
-            CameraOrientationChoice.current = orientation
-        } label: {
-            HStack {
-                Text("rotation")
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(Push.Palette.textSecondary)
-                Spacer()
-                Text(orientation.label)
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Push.Palette.accent)
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Push.Palette.accent)
-            }
-        }
-        .buttonStyle(.plain)
-        .padding(.top, 2)
-    }
 }

@@ -43,6 +43,10 @@ final class SessionModel {
     private(set) var diagnostics = RepDiagnostics()
     private(set) var frameRate: Double = 0
 
+    /// Latest pose, purely so the skeleton overlay can be drawn. Never used
+    /// for counting.
+    private(set) var lastFrame: PoseFrame?
+
     func updateFrameRate(_ rate: Double) { frameRate = rate }
 
     /// Set when pose has been unusable long enough that we should stop asking
@@ -147,6 +151,7 @@ final class SessionModel {
 
     func ingest(_ frame: PoseFrame) {
         guard mode == .camera else { return }
+        lastFrame = frame
 
         if case .framing = phase {
             framingIssue = framingCheck.evaluate(frame)

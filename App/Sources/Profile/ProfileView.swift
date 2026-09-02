@@ -9,7 +9,7 @@ struct ProfileView: View {
     @State private var haptics = true
     @State private var exportFile: ExportFile?
     @State private var exportError: String?
-    @AppStorage("showCountingDebug") private var showCountingDebug = false
+    @AppStorage("showCountingDebug") private var showCountingDebug = true
     @AppStorage("enableAccounts") private var enableAccounts = false
     @State private var authModel = AuthModel()
 
