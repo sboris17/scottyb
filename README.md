@@ -54,13 +54,18 @@ requiring somebody on the floor in front of a device.
 
 ## Status
 
-**The counting algorithm is validated. The Swift has never been compiled.**
+Builds clean and all tests pass in CI: the packages, the app target
+(`xcodebuild` for iOS Simulator), and the Python reference engine.
 
-It was written in an environment with no Swift toolchain, so the algorithm was
-developed and measured in Python first (`Tools/RepEngineSim`) and then
-transcribed. Delimiter balance and cross-file symbol resolution were checked
-mechanically; everything else is unverified. CI runs the first real build —
-expect it to need fixes.
+The counting algorithm was developed and measured in Python first
+(`Tools/RepEngineSim`), then transcribed to Swift. Both are driven by the same
+exported fixtures, so the Swift engine is verified to agree with the reference
+implementation it was measured from.
+
+What CI does *not* prove: that Vision returns usable joints for a real person
+in a real room. Nothing here has run on a physical device, and no recorded
+video of an actual human has gone through it. That is the M0 gate in the
+[roadmap](docs/05-roadmap.md) and it is still open.
 
 Rep counter, measured across 40 noise seeds per scenario:
 

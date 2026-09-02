@@ -24,13 +24,30 @@ final class FixtureReplayTests: XCTestCase {
         return JointName(rawValue: String(parts[0]) + tail.prefix(1).uppercased() + String(tail.dropFirst()))
     }
 
+    /// Missing fixtures must FAIL, never skip. A skipped accuracy gate passes
+    /// green and proves nothing, which is the worst possible way for the
+    /// counting engine to regress.
+    struct MissingFixture: Error, CustomStringConvertible {
+        let name: String
+        var description: String {
+            "Fixture \(name).json is not in the test bundle. Run `make fixtures`."
+        }
+    }
+
     static func load(_ name: String) throws -> Fixture {
         guard let url = Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures")
             ?? Bundle.module.url(forResource: name, withExtension: "json") else {
-            throw XCTSkip("Fixture \(name).json not found in test bundle")
+            throw MissingFixture(name: name)
         }
         return try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
     }
+
+    static let allFixtures = [
+        "standard_10", "shallow_10", "very_shallow_8", "slow_deep_8", "fast_15",
+        "fatigue_12", "sagging_back_10", "pause_at_bottom_6", "dropout_8_of_10",
+        "noisy_10", "negative_idle_plank", "negative_arm_bend",
+        "negative_noisy_idle", "negative_bouncing",
+    ]
 
     static func poseFrames(_ fixture: Fixture) -> [PoseFrame] {
         let names = fixture.joints.compactMap(jointName)
@@ -61,6 +78,19 @@ final class FixtureReplayTests: XCTestCase {
         let result = try replay(name)
         XCTAssertEqual(result.counted, result.expected,
                        "\(name): \(result.note)", file: file, line: line)
+    }
+
+    /// Guards the guard: proves every fixture is present and carries real
+    /// frames, so a bundling mistake cannot quietly empty the suite.
+    func testEveryFixtureIsPresentAndPopulated() throws {
+        for name in Self.allFixtures {
+            let fixture = try Self.load(name)
+            XCTAssertGreaterThan(fixture.frames.count, 100, "\(name) has too few frames")
+            XCTAssertEqual(fixture.joints.count, 12, "\(name) is missing joints")
+            let frames = Self.poseFrames(fixture)
+            XCTAssertEqual(frames.count, fixture.frames.count)
+            XCTAssertEqual(frames.first?.joints.count, 12, "\(name) failed to map joint names")
+        }
     }
 
     // MARK: - Positive clips
@@ -107,23 +137,21 @@ final class FixtureReplayTests: XCTestCase {
 
     /// The ship gate from docs/03-rep-detection.md, enforced as a test.
     func testAggregateAccuracyMeetsShipGate() throws {
-        let names = ["standard_10", "shallow_10", "very_shallow_8", "slow_deep_8",
-                     "fast_15", "fatigue_12", "sagging_back_10", "pause_at_bottom_6",
-                     "dropout_8_of_10", "noisy_10"]
+        let names = Self.allFixtures.filter { !$0.hasPrefix("negative_") }
         var error = 0, expected = 0
         for name in names {
             let result = try replay(name)
             error += abs(result.counted - result.expected)
             expected += result.expected
         }
+        XCTAssertEqual(expected, 97, "the positive fixture set changed shape")
         let accuracy = 1 - Double(error) / Double(expected)
         XCTAssertGreaterThanOrEqual(accuracy, 0.98,
             "Rep accuracy \(accuracy * 100)% is below the 98% ship gate")
     }
 
     func testNoFalsePositivesOnAnyNegativeClip() throws {
-        for name in ["negative_idle_plank", "negative_arm_bend",
-                     "negative_noisy_idle", "negative_bouncing"] {
+        for name in Self.allFixtures.filter({ $0.hasPrefix("negative_") }) {
             let result = try replay(name)
             XCTAssertEqual(result.counted, 0, "\(name) produced \(result.counted) phantom rep(s)")
         }

@@ -7,7 +7,7 @@ struct ProfileView: View {
     @State private var goalDraft: Int = 25
     @State private var cadence: Feedback.Cadence = .everyFive
     @State private var haptics = true
-    @State private var exportURL: URL?
+    @State private var exportFile: ExportFile?
     @State private var exportError: String?
 
     var body: some View {
@@ -56,8 +56,7 @@ struct ProfileView: View {
                 cadence = Feedback.shared.spokenCadence
                 haptics = Feedback.shared.hapticsEnabled
             }
-            .sheet(item: Binding(get: { exportURL.map(ExportFile.init) },
-                                 set: { if $0 == nil { exportURL = nil } })) { file in
+            .sheet(item: $exportFile) { file in
                 ShareSheet(url: file.url)
             }
         }
@@ -69,7 +68,7 @@ struct ProfileView: View {
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent("push-export.json")
             try data.write(to: url, options: .atomic)
-            exportURL = url
+            exportFile = ExportFile(url)
         } catch {
             exportError = "Could not build the export: \(error.localizedDescription)"
         }

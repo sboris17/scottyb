@@ -21,7 +21,6 @@ struct RootView: View {
             }
         }
         .tint(Push.Palette.accent)
-        .preferredColorScheme(nil)
     }
 }
 

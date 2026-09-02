@@ -12,7 +12,7 @@ struct SessionContainerView: View {
     @State private var model: SessionModel
     @State private var camera = PoseCameraController()
     @State private var cameraError: String?
-    @State private var result: SessionResult?
+    @State private var summary: IdentifiedResult?
 
     init(launch: SessionLaunch) {
         _model = State(initialValue: SessionModel(prescription: launch.prescription,
@@ -48,11 +48,12 @@ struct SessionContainerView: View {
                 camera.stop()
                 let outcome = model.result()
                 store.record(outcome)
-                result = outcome
+                summary = IdentifiedResult(outcome)
             }
         }
-        .fullScreenCover(item: Binding(get: { result.map(IdentifiedResult.init) },
-                                       set: { if $0 == nil { dismiss() } })) { wrapper in
+        // Held as state rather than derived in a Binding getter: a getter that
+        // mints a fresh id on every evaluation makes SwiftUI re-present forever.
+        .fullScreenCover(item: $summary) { wrapper in
             SessionSummaryView(result: wrapper.value) { dismiss() }
                 .environment(store)
         }
