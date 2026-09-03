@@ -49,11 +49,10 @@ the App ID makes archiving fail with a provisioning error.
 
 ## 3. Try it
 
-Profile → Testing → **Enable accounts (preview)** → an Account section
-appears with the Apple button.
-
-If it is not configured you get a plain explanation rather than a button that
-silently does nothing.
+Open **You**. If `Supabase.plist` is present and valid, an **Account** section
+is there with the Apple button. There is no switch to find: the presence of
+the file is the switch. If the file is missing or malformed the section does
+not appear at all, rather than offering a button that silently does nothing.
 
 ## How syncing behaves
 

@@ -72,7 +72,7 @@ enum PreviewSupport {
 /// Accounts are off in previews, which makes the coordinator inert - but it
 /// still has to be in the environment, because a view that reads it crashes
 /// if it is missing.
-@MainActor private let previewSyncer = SyncCoordinator(enabled: false)
+@MainActor private let previewSyncer = SyncCoordinator()
 
 #Preview("Home") {
     MainTabs()

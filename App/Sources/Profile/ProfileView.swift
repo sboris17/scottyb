@@ -11,7 +11,6 @@ struct ProfileView: View {
     @State private var exportFile: ExportFile?
     @State private var exportError: String?
     @AppStorage("showCountingDebug") private var showCountingDebug = true
-    @AppStorage("enableAccounts") private var enableAccounts = false
     @State private var authModel = AuthModel()
     @Environment(SyncCoordinator.self) private var syncer
     @Environment(\.modelContext) private var modelContext
@@ -40,7 +39,12 @@ struct ProfileView: View {
                         .foregroundStyle(Push.Palette.textSecondary)
                 }
 
-                if enableAccounts {
+                // Shown whenever a project is configured, rather than behind
+                // a switch. The switch existed because nothing actually synced
+                // yet; now that it does, it is pure friction - and it hid the
+                // whole feature behind a toggle buried in a section called
+                // "Testing", which is exactly where nobody looks for a login.
+                if authModel.isConfigured {
                     Section {
                         AppleSignInView(model: authModel)
                             .listRowBackground(Color.clear)
@@ -58,7 +62,6 @@ struct ProfileView: View {
 
                 Section {
                     Toggle("Show counting debug", isOn: $showCountingDebug)
-                    Toggle("Enable accounts (preview)", isOn: $enableAccounts)
                     Button("Reset all progress", role: .destructive) { store.resetProgress() }
                 } header: {
                     Text("Testing")

@@ -44,6 +44,15 @@ final class AuthModel {
         }
     }
 
+    /// Whether a Supabase project is configured. Drives whether the account
+    /// UI appears at all: with no `Supabase.plist` there is nothing to sign
+    /// in to, and a section explaining that to somebody who never asked for
+    /// accounts is just clutter.
+    var isConfigured: Bool {
+        if case .notConfigured = state { return false }
+        return true
+    }
+
     var isSignedIn: Bool {
         if case .signedIn = state { return true }
         return false

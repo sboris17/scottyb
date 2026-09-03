@@ -14,8 +14,7 @@ import PushSync
 /// and a failure to sync is a normal state rather than an error - it leaves
 /// the workout exactly where it was, still marked as needing to go.
 ///
-/// Everything here is inert unless accounts are switched on and somebody is
-/// signed in.
+/// Inert unless a Supabase project is configured and somebody is signed in.
 @MainActor
 @Observable
 final class SyncCoordinator {
@@ -36,8 +35,11 @@ final class SyncCoordinator {
     private let sync: SyncService?
     private var inFlight = false
 
-    init(enabled: Bool) {
-        guard enabled, let config = try? SupabaseConfig.fromBundle() else {
+    /// Configured by the presence of `Supabase.plist`, nothing else. There is
+    /// no user-facing switch: a build with no project cannot sync and does not
+    /// pretend to, and a build with one has no reason to be asked twice.
+    init() {
+        guard let config = try? SupabaseConfig.fromBundle() else {
             self.auth = nil
             self.sync = nil
             return
