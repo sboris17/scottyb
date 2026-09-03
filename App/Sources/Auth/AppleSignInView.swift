@@ -32,10 +32,13 @@ struct AppleSignInView: View {
                     SecondaryButton("Sign out") { model.signOut() }
                 }
 
-            case .signingIn:
-                ProgressView().tint(Push.Palette.accent)
-
-            case .signedOut, .failed:
+            // signingIn deliberately shares this branch. Swapping the button
+            // out for a spinner tears it out of the view hierarchy, and
+            // SwiftUI tears down the authorization request with it - so
+            // Apple's sheet completes and the callback never arrives. The
+            // button stays mounted for the whole request; the spinner goes on
+            // top of it.
+            case .signedOut, .failed, .signingIn:
                 if case .failed(let message) = model.state {
                     Text(message)
                         .font(Push.Typography.caption)
@@ -43,6 +46,22 @@ struct AppleSignInView: View {
                         .multilineTextAlignment(.center)
                 }
                 signInButton
+                    .overlay {
+                        if model.isSigningIn {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: Push.Metrics.cornerRadius,
+                                                 style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                                ProgressView().tint(Push.Palette.accent)
+                            }
+                        }
+                    }
+                    .disabled(model.isSigningIn)
+                    .allowsHitTesting(!model.isSigningIn)
+                    // Pins the button's identity across state changes, so
+                    // nothing above it can cause SwiftUI to rebuild it
+                    // mid-request either.
+                    .id("apple-sign-in-button")
             }
         }
     }
@@ -50,6 +69,9 @@ struct AppleSignInView: View {
     private var signInButton: some View {
         SignInWithAppleButton(.signIn) { request in
             request.requestedScopes = [.fullName, .email]
+            // Only the nonce here. This closure runs during a view update, and
+            // moving to a spinner from inside it is what used to unmount the
+            // button before Apple could call back.
             request.nonce = model.startAppleRequest()
         } onCompletion: { result in
             switch result {

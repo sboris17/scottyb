@@ -74,10 +74,15 @@ final class AuthModel {
     }
 
     /// Called when building the Apple request. Returns the hashed nonce.
+    ///
+    /// Deliberately does NOT move to `signingIn`. It is called from inside the
+    /// button's request-configuration closure, which runs during a view
+    /// update: changing state there re-renders the button away mid-request,
+    /// and the authorization goes with it. The spinner starts once Apple has
+    /// handed back a token and there is a real exchange to wait on.
     func startAppleRequest() -> String {
         let raw = Nonce.random()
         pendingNonce = raw
-        state = .signingIn
         return Nonce.sha256(raw)
     }
 
@@ -103,6 +108,7 @@ final class AuthModel {
             return
         }
         pendingNonce = nil
+        state = .signingIn
         do {
             let session = try await withThrowingTaskGroup(of: AuthSession.self) { group in
                 group.addTask {
