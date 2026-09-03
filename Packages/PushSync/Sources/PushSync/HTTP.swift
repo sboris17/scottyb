@@ -10,8 +10,21 @@ public protocol HTTPClient: Sendable {
 public struct URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
 
-    public init(session: URLSession = .shared) {
-        self.session = session
+    /// Twenty seconds, not the default sixty.
+    ///
+    /// Every one of these calls has somebody waiting on a spinner, and a
+    /// minute of that is indistinguishable from the app being broken. Failing
+    /// costs nothing here - workouts are already saved locally and the sync
+    /// retries - so it is better to say so and let them try again.
+    public init(session: URLSession? = nil) {
+        if let session {
+            self.session = session
+        } else {
+            let configuration = URLSessionConfiguration.default
+            configuration.timeoutIntervalForRequest = 20
+            configuration.waitsForConnectivity = false
+            self.session = URLSession(configuration: configuration)
+        }
     }
 
     public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {

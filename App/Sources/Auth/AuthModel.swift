@@ -7,6 +7,16 @@ import PushSync
 /// Every failure path lands in `.failed` with something a person can act on,
 /// because the most common outcome of a broken auth setup is a button that
 /// does nothing and gives no reason.
+/// Pinned to the main actor, and that is load-bearing rather than tidy.
+///
+/// It was not, and the symptom was a sign-in that worked and never looked like
+/// it had: Apple returned, the token was exchanged, `state` was set to
+/// signedIn - on a background thread, because awaiting a nonisolated async
+/// method hops off the main actor - and SwiftUI never picked the change up.
+/// The spinner span forever over a session that had already been established.
+/// `signOut` had a `MainActor.run` bolted on for exactly this reason, which
+/// should have been the clue that the whole class wanted isolating instead.
+@MainActor
 @Observable
 final class AuthModel {
     enum State: Equatable {
@@ -33,7 +43,7 @@ final class AuthModel {
             Task { [weak self] in
                 if await auth.isSignedIn {
                     let email = await auth.currentSession?.email
-                    await MainActor.run { self?.state = .signedIn(email: email) }
+                    self?.state = .signedIn(email: email)
                 }
             }
         } catch {
@@ -67,7 +77,12 @@ final class AuthModel {
     }
 
     func completeAppleSignIn(identityToken: String) async {
-        guard let auth else { return }
+        // Every path out of here must move the state. `signingIn` renders as
+        // a spinner, so an early return is a spinner that never stops.
+        guard let auth else {
+            state = .failed("Accounts aren't set up on this build.")
+            return
+        }
         guard let raw = pendingNonce else {
             state = .failed("Sign-in expired. Please try again.")
             return
@@ -95,7 +110,7 @@ final class AuthModel {
         guard let auth else { return }
         Task { [weak self] in
             try? await auth.signOut()
-            await MainActor.run { self?.state = .signedOut }
+            self?.state = .signedOut
         }
     }
 }
