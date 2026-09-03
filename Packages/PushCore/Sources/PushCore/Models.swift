@@ -49,6 +49,20 @@ public final class Session {
     public var formScore: Double?
     public var modifiedAt: Date = Date()
 
+    /// When this workout was last accepted by the server, or nil if it has
+    /// never made it there.
+    ///
+    /// Written only after a successful upload, never before. A workout that
+    /// finished on a train with no signal has to survive being closed,
+    /// reopened and synced days later, and the only way to guarantee that is
+    /// for "sent" to mean "the server said yes".
+    public var syncedAt: Date?
+
+    public var needsSync: Bool {
+        guard let syncedAt else { return true }
+        return modifiedAt > syncedAt
+    }
+
     @Relationship(deleteRule: .cascade, inverse: \WorkoutSet.session)
     public var sets: [WorkoutSet]? = []
 

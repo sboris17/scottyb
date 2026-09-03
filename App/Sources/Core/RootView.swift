@@ -5,10 +5,16 @@ import PushCore
 
 struct RootView: View {
     @State private var store: Store
+    @State private var syncer: SyncCoordinator
     @AppStorage("hasOnboarded") private var hasOnboarded = false
+    @AppStorage("enableAccounts") private var enableAccounts = false
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.modelContext) private var modelContext
 
     init(context: ModelContext) {
         _store = State(initialValue: Store(context: context))
+        _syncer = State(initialValue: SyncCoordinator(
+            enabled: UserDefaults.standard.bool(forKey: "enableAccounts")))
     }
 
     var body: some View {
@@ -16,11 +22,22 @@ struct RootView: View {
             if hasOnboarded && !Screenshots.forcesOnboarding {
                 MainTabs()
                     .environment(Screenshots.store ?? store)
+                    .environment(syncer)
             } else {
                 OnboardingView(store: store) { hasOnboarded = true }
             }
         }
         .tint(Push.Palette.accent)
+        .onChange(of: enableAccounts) { _, on in
+            syncer = SyncCoordinator(enabled: on)
+        }
+        // Coming back to the app is the natural moment to retry: it is when
+        // the phone is most likely to have found a network again, and it costs
+        // nothing when there is nothing pending.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            syncer.syncSoon(modelContext)
+        }
     }
 }
 

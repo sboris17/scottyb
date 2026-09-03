@@ -69,12 +69,21 @@ enum PreviewSupport {
     }
 }
 
+/// Accounts are off in previews, which makes the coordinator inert - but it
+/// still has to be in the environment, because a view that reads it crashes
+/// if it is missing.
+@MainActor private let previewSyncer = SyncCoordinator(enabled: false)
+
 #Preview("Home") {
-    MainTabs().environment(PreviewSupport.populatedStore())
+    MainTabs()
+        .environment(PreviewSupport.populatedStore())
+        .environment(previewSyncer)
 }
 
 #Preview("Home - first launch") {
-    MainTabs().environment(PreviewSupport.emptyStore())
+    MainTabs()
+        .environment(PreviewSupport.emptyStore())
+        .environment(previewSyncer)
 }
 
 #Preview("Onboarding") {

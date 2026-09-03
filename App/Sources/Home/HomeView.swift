@@ -9,6 +9,7 @@ import TrainingEngine
 /// tappable thing on screen and is never more than one tap from a rep.
 struct HomeView: View {
     @Environment(Store.self) private var store
+    @Environment(SyncCoordinator.self) private var syncer
     @State private var activeSession: SessionLaunch?
     @State private var resumable: SessionDraft?
     private let drafts = SessionDraftStore()
@@ -42,6 +43,7 @@ struct HomeView: View {
             .fullScreenCover(item: $activeSession) { launch in
                 SessionContainerView(launch: launch)
                     .environment(store)
+                    .environment(syncer)
             }
         }
     }

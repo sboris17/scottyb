@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import PushUI
 import PushCore
 
@@ -12,6 +13,8 @@ struct ProfileView: View {
     @AppStorage("showCountingDebug") private var showCountingDebug = true
     @AppStorage("enableAccounts") private var enableAccounts = false
     @State private var authModel = AuthModel()
+    @Environment(SyncCoordinator.self) private var syncer
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
@@ -41,10 +44,15 @@ struct ProfileView: View {
                     Section {
                         AppleSignInView(model: authModel)
                             .listRowBackground(Color.clear)
+                        if authModel.isSignedIn {
+                            SyncStatusRow(syncer: syncer) {
+                                await syncer.sync(modelContext)
+                            }
+                        }
                     } header: {
                         Text("Account")
                     } footer: {
-                        Text("Signing in lets your history sync across devices. Everything works without it.")
+                        Text("Signing in lets your history sync across devices. Everything works without it \u{2014} workouts are saved on this phone first, always.")
                     }
                 }
 
@@ -79,6 +87,14 @@ struct ProfileView: View {
                 goalDraft = store.profile.dailyGoal
                 cadence = Feedback.shared.spokenCadence
                 haptics = Feedback.shared.hapticsEnabled
+                syncer.refreshPendingCount(modelContext)
+            }
+            .onChange(of: authModel.isSignedIn) { _, signedIn in
+                // Signing in is the moment to reconcile: everything done
+                // before the account existed goes up, and anything from
+                // another device comes down.
+                guard signedIn else { return }
+                Task { await syncer.sync(modelContext) }
             }
             .sheet(item: $exportFile) { file in
                 ShareSheet(url: file.url)
@@ -111,4 +127,69 @@ private struct ShareSheet: UIViewControllerRepresentable {
         UIActivityViewController(activityItems: [url], applicationActivities: nil)
     }
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
+}
+
+/// Sync state, said plainly.
+///
+/// The one thing this must never do is imply a workout is at risk. It is not:
+/// it is on the phone. "Waiting to sync" is a normal state, not a warning, and
+/// nothing here is coloured as an error except an answer the server actually
+/// gave.
+private struct SyncStatusRow: View {
+    let syncer: SyncCoordinator
+    let onSyncNow: () async -> Void
+    @State private var isSyncing = false
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(Push.Typography.body)
+                    .foregroundStyle(Push.Palette.textPrimary)
+                if let detail {
+                    Text(detail)
+                        .font(Push.Typography.caption)
+                        .foregroundStyle(isError ? Push.Palette.flame : Push.Palette.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 12)
+            if syncer.status.isBusy || isSyncing {
+                ProgressView()
+            } else {
+                Button("Sync now") {
+                    isSyncing = true
+                    Task { await onSyncNow(); isSyncing = false }
+                }
+                .font(Push.Typography.caption)
+            }
+        }
+    }
+
+    private var title: String {
+        switch syncer.status {
+        case .syncing: return "Syncing…"
+        case .failed: return "Not synced yet"
+        case .idle where syncer.pendingCount > 0: return "\(syncer.pendingCount) waiting to sync"
+        case .idle: return "Everything synced"
+        case .signedOut: return "Signed out"
+        case .disabled: return "Sync is off"
+        }
+    }
+
+    private var detail: String? {
+        switch syncer.status {
+        case .failed(let reason): return reason
+        case .idle(let last?):
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .full
+            return "Last synced \(formatter.localizedString(for: last, relativeTo: Date()))."
+        default: return nil
+        }
+    }
+
+    private var isError: Bool {
+        if case .failed = syncer.status { return true }
+        return false
+    }
 }

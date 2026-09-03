@@ -49,22 +49,44 @@ appears with the Apple button.
 If it is not configured you get a plain explanation rather than a button that
 silently does nothing.
 
-## What exists and what does not
+## How syncing behaves
 
-Built and tested (`Packages/PushSync`, 18 tests):
+One rule decides everything else: **the phone is the source of truth and a
+workout is never lost.** Somebody who has just done fifty push-ups in a
+basement with no signal has earned that record, and no amount of network
+trouble may take it away.
 
-- Apple identity-token exchange with Supabase, including the nonce handling
-- Token refresh, transparent and ahead of expiry
-- Keychain storage for tokens
-- Upsert-based upload and filtered download of workout sessions
-- Timestamp decoding that survives Postgres emitting fractional seconds
+So the local database is written first and unconditionally. Syncing is
+something that happens to it afterwards, and a failure to sync is a normal
+state rather than an error — the workout stays exactly where it is, still
+marked as needing to go.
 
-Not built yet:
+- A workout is marked synced **only after the server accepts it**, never
+  before. Anything unsent is retried later.
+- Retries happen when the app comes back to the foreground, when a workout
+  finishes, and when you sign in. There is no spinner blocking anything.
+- Uploads are upserts keyed on the workout's own id, so a retry after a
+  dropped connection updates the same row instead of duplicating a workout.
+- Signing in reconciles both ways: everything recorded before the account
+  existed goes up, and anything from another device comes down.
+- Rows already on the phone are never overwritten by the server. A workout
+  log is append-only in practice, so there is nothing to reconcile and
+  overwriting could only ever lose something.
 
-- Actually calling `SyncService` after a workout finishes. The client is
-  ready; nothing calls it. This is deliberate — it should be written against
-  a real project once the tables exist, so the failure modes (offline, an
-  expired token, a rejected row) can be exercised rather than guessed at.
-- Conflict resolution for the same account on two devices.
+Profile shows the state plainly — `Everything synced`, `3 waiting to sync`,
+or the reason it failed — with a **Sync now** button. "Waiting to sync" is
+deliberately not styled as a warning, because nothing is at risk.
+
+## What is still not built
+
+- Conflict resolution for the same account editing on two devices. Today the
+  local copy always wins and remote-only rows are added; that is correct for
+  an append-only log and wrong the moment workouts become editable.
+- Profile and program enrolment are not synced, only workouts. The tables
+  exist in `schema.sql`; nothing writes to `profiles` from the client yet.
 - Any social feature. Friends and leaderboards need a second look at the
   schema, not just a sync call.
+- None of the sync paths have run against a real Supabase project yet. The
+  pieces are unit-tested (`Packages/PushSync`, 18 tests) but the first run
+  against live tables is the one that finds the surprises — expect to hit at
+  least one, and the failure will be visible in Profile rather than silent.

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import AVFoundation
 import RepEngine
 import PushUI
@@ -7,6 +8,8 @@ import TrainingEngine
 
 struct SessionContainerView: View {
     @Environment(Store.self) private var store
+    @Environment(SyncCoordinator.self) private var syncer
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
     @State private var model: SessionModel
@@ -51,6 +54,10 @@ struct SessionContainerView: View {
                 camera.stop()
                 let outcome = model.result()
                 store.record(outcome)
+                // The workout is already saved locally at this point. This is
+                // best-effort on top of that and cannot fail in a way the user
+                // has to care about.
+                syncer.syncSoon(modelContext)
                 summary = IdentifiedResult(outcome)
             }
         }
