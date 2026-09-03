@@ -143,10 +143,15 @@ final class SessionModel {
         startedAt = Date()
         Feedback.shared.prepare()
         // Resuming starts at the set after the last one banked.
-        phase = .counting(setIndex: min(completedSets.count, prescription.count - 1))
+        let first = min(completedSets.count, prescription.count - 1)
+        phase = .counting(setIndex: first)
         repsThisSet = 0
         countingStartedAt = Date()
         engine.reset()
+        // Says the set has started without the screen having to be read. On
+        // the camera path this is also the last cue before a silence that,
+        // until now, was indistinguishable from the app not working.
+        Feedback.shared.setBeginning(first + 1)
     }
 
     func switchToManual() {
@@ -250,20 +255,24 @@ final class SessionModel {
         completedSets.append(repsThisSet)
         samples[min(index, samples.count - 1)] = engine.reps
         onCheckpoint?(draft)
-        Feedback.shared.setComplete()
+        let counted = completedSets[completedSets.count - 1]
         repsThisSet = 0
         engine.reset()
 
         let next = index + 1
         guard next < prescription.count else {
+            Feedback.shared.setComplete(reps: counted)
             finish()
             return
         }
         let rest = TimeInterval(prescription[index].restSeconds)
         guard rest > 0 else {
+            Feedback.shared.setComplete(reps: counted)
             phase = .counting(setIndex: next)
+            Feedback.shared.setBeginning(next + 1)
             return
         }
+        Feedback.shared.setComplete(reps: counted, restSeconds: prescription[index].restSeconds)
         startRest(seconds: rest, nextSetIndex: next)
     }
 
@@ -284,8 +293,8 @@ final class SessionModel {
         guard case .resting(let next, _) = phase else { return }
         restTimer?.invalidate()
         restTimer = nil
-        Feedback.shared.setComplete()
         phase = .counting(setIndex: next)
+        Feedback.shared.setBeginning(next + 1)
     }
 
     func finish() {

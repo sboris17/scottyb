@@ -5,7 +5,7 @@ import PushCore
 struct ProfileView: View {
     @Environment(Store.self) private var store
     @State private var goalDraft: Int = 25
-    @State private var cadence: Feedback.Cadence = .everyFive
+    @State private var cadence: Feedback.Cadence = Feedback.shared.spokenCadence
     @State private var haptics = true
     @State private var exportFile: ExportFile?
     @State private var exportError: String?
