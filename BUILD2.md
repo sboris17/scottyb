@@ -32,10 +32,16 @@ the App ID makes archiving fail with a provisioning error.
    your App ID → tick **Sign In with Apple** → Save.
 2. Supabase dashboard → Authentication → Providers → Apple → enable, and fill
    in your Services ID / Team ID / Key as it prompts.
-3. Only now, uncomment this line in `project.yml`:
+3. The entitlement is already enabled in `project.yml`, so there is nothing
+   to edit — but it only works once step 1 above is saved. Until then every
+   build fails with a provisioning error naming the entitlement rather than
+   the missing capability.
 
-   ```yaml
-   CODE_SIGN_ENTITLEMENTS: App/Push.entitlements
+   If you need to build before setting the capability up, comment it out:
+
+   ```sh
+   sed -i '' 's|^        CODE_SIGN_ENTITLEMENTS|        # CODE_SIGN_ENTITLEMENTS|' project.yml
+   xcodegen generate
    ```
 
 4. `xcodegen generate`, then in Xcode confirm Signing & Capabilities shows

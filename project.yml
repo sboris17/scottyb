@@ -67,17 +67,22 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "10"
+        CURRENT_PROJECT_VERSION: "11"
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_PREVIEWS: YES
         GENERATE_INFOPLIST_FILE: NO
-        # Sign in with Apple. Leave this commented until the capability is
-        # enabled on the App ID at developer.apple.com (Certificates,
-        # Identifiers & Profiles -> your identifier -> Sign In with Apple).
-        # Uncommenting it before then makes archiving fail with a provisioning
-        # error, which is a miserable way to discover the ordering.
-        # CODE_SIGN_ENTITLEMENTS: App/Push.entitlements
+        # Sign in with Apple. This REQUIRES the capability to be enabled on
+        # the App ID first, at developer.apple.com (Certificates, Identifiers
+        # & Profiles -> com.scottsmanboris.pushreps -> tick Sign In with
+        # Apple -> Save). Without that, every build and archive fails with a
+        # provisioning error that names the entitlement rather than the
+        # missing capability, which is a miserable way to learn the ordering.
+        #
+        # It lives here rather than being switched on locally because a local
+        # edit to this file conflicts on every pull, which has already cost an
+        # evening once.
+        CODE_SIGN_ENTITLEMENTS: App/Push.entitlements
     dependencies:
       - package: RepEngine
       - package: PushCore
