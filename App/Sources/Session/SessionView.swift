@@ -70,6 +70,7 @@ struct SessionContainerView: View {
         camera.onFrame = { [camera] frame in
             model.ingest(frame)
             model.updateFrameRate(camera.measuredFrameRate)
+            model.updateOrientation(camera.orientationLabel)
         }
         camera.onFailure = { error in
             cameraError = error.localizedDescription
@@ -242,6 +243,7 @@ private struct CountingView: View {
                 if showDebug {
                     DebugOverlay(diagnostics: model.diagnostics,
                                  frameRate: model.frameRate,
+                                 orientation: model.orientationLabel,
                                  framingIssue: model.framingIssue)
                         .padding(.top, 8)
                 }

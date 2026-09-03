@@ -11,6 +11,7 @@ import PushUI
 struct DebugOverlay: View {
     let diagnostics: RepDiagnostics
     let frameRate: Double
+    let orientation: String
     let framingIssue: FramingIssue?
 
     private let tuning = RepEngineTuning()
@@ -25,6 +26,7 @@ struct DebugOverlay: View {
             // count with, and those are not the same thing.
             guardRow("confidence", diagnostics.jointConfidence,
                      min: tuning.minJointConfidence, format: "%.2f")
+            row("rotation", orientation)
             row("frames used", diagnostics.usableFrames + diagnostics.unusableFrames == 0
                 ? "—"
                 : String(format: "%.0f%%  (%d/%d)",

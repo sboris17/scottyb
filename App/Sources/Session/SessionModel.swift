@@ -57,6 +57,14 @@ final class SessionModel {
 
     func updateFrameRate(_ rate: Double) { frameRate = rate }
 
+    /// Which rotation the detector settled on, and how confident it was.
+    /// Shown rather than trusted: the whole point of measuring it is that the
+    /// previous hard-coded answer looked reasonable and was costing frames.
+    private var hasAnnouncedTracking = false
+
+    private(set) var orientationLabel = "measuring"
+    func updateOrientation(_ label: String) { orientationLabel = label }
+
     /// Set when pose has been unusable long enough that we should stop asking
     /// the user to fix framing and just offer the manual path.
     private(set) var shouldOfferManual = false
@@ -175,6 +183,7 @@ final class SessionModel {
 
         let output = engine.process(frame)
         diagnostics = output.diagnostics
+        announceTrackingOnce()
         speakAdviceIfStuck()
         trackConfidence(for: frame)
 
@@ -187,6 +196,40 @@ final class SessionModel {
                 registerRep()
             }
             currentHint = output.hint
+        }
+    }
+
+    /// One spoken verdict on whether the app can actually see you, a few
+    /// seconds in.
+    ///
+    /// Until now the first word after "go" came twelve seconds later and only
+    /// if nothing had counted, so a set could be most of the way through
+    /// before there was any sign either way. The person is on the floor and
+    /// cannot read the screen, so silence is indistinguishable from failure -
+    /// and after enough failures they stop and get up to check, which is worse
+    /// than being told.
+    ///
+    /// Four seconds is enough frames to be sure, and early enough to fix the
+    /// placement without having wasted the set.
+    private func announceTrackingOnce() {
+        guard case .counting = phase, !hasAnnouncedTracking else { return }
+        let started = countingStartedAt ?? Date()
+        if countingStartedAt == nil { countingStartedAt = started }
+        guard Date().timeIntervalSince(started) > 4 else { return }
+        guard diagnostics.usableFrames + diagnostics.unusableFrames >= 20 else { return }
+        hasAnnouncedTracking = true
+
+        if diagnostics.usableFrameFraction >= 0.7 {
+            // Deliberately said even when reps are already counting: it costs
+            // three words and it is the confirmation that stops someone
+            // breaking their set to go and look at the screen.
+            Feedback.shared.speak("Got you.")
+        } else if let advice = CountingCoach.advice(for: diagnostics, countedReps: repsThisSet) {
+            lastSpokenAdviceAt = Date()
+            spokenAdviceCount += 1
+            Feedback.shared.speak(advice)
+        } else {
+            Feedback.shared.speak("Only partly seeing you. More light, or move the phone closer.")
         }
     }
 
@@ -258,6 +301,8 @@ final class SessionModel {
         let counted = completedSets[completedSets.count - 1]
         repsThisSet = 0
         engine.reset()
+        hasAnnouncedTracking = false
+        countingStartedAt = Date()
 
         let next = index + 1
         guard next < prescription.count else {

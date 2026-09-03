@@ -109,6 +109,12 @@ final class PoseCameraController: NSObject {
             }
             self.captureSession.commitConfiguration()
             self.configurePreviewMirroring()
+            // The other lens sees a different picture; the old answer no
+            // longer applies to it.
+            self.orientationScores = [:]
+            self.calibrationFrames = 0
+            self.imageOrientation = .up
+            self.orientationLabel = "measuring"
         }
     }
 
@@ -151,17 +157,105 @@ final class PoseCameraController: NSObject {
         configurePreviewMirroring()
     }
 
-    /// The engine's height signal assumes image-space "up" is world-up, which
-    /// holds only if the buffer is oriented the same way the user is. The
-    /// phone is propped on the floor, so this comes from device orientation.
-    /// The buffer is handed to Vision unrotated.
+    // MARK: - Orientation
+
+    /// Which way up the picture is handed to Vision.
     ///
-    /// It used to be rotated to make image-up match world-up, because the
-    /// counting maths depended on that. It no longer does - the engine works
-    /// from distances and projections that are the same at any rotation - so
-    /// there is nothing left to get wrong here, and Vision's coordinates line
-    /// up exactly with the preview the skeleton overlay is drawn on.
-    private var imageOrientation: CGImagePropertyOrientation { .up }
+    /// This was hard-coded to `.up`, on the reasoning that the counting maths
+    /// no longer cares about rotation. That reasoning was right about the
+    /// engine and wrong about the detector. The engine works from distances
+    /// and projections, so it genuinely does not care - but Vision is trained
+    /// overwhelmingly on people who are standing up, and a push-up is a person
+    /// lying down. Whether it sees an upright body or a sideways one depends
+    /// on how the phone happens to be propped, and it reports markedly less
+    /// confidence in a sideways one.
+    ///
+    /// That is the number that has been marginal in every device test so far:
+    /// joint confidence hovering either side of the 0.30 gate with about half
+    /// of all frames discarded, regardless of angle, distance or lighting.
+    ///
+    /// So it is measured rather than assumed. For the first couple of seconds
+    /// of a session all four rotations are tried in rotation, one per frame,
+    /// and the one Vision is most confident about wins. Round-robin rather
+    /// than four blocks in a row because the subject is moving: consecutive
+    /// frames are not a fair comparison, interleaved ones are.
+    private static let candidateOrientations: [CGImagePropertyOrientation] =
+        [.up, .right, .down, .left]
+
+    private var imageOrientation: CGImagePropertyOrientation = .up
+    private var orientationScores: [CGImagePropertyOrientation: (total: Double, frames: Int)] = [:]
+    private var calibrationFrames = 0
+
+    /// Eight frames per rotation, about two seconds at 15fps. Long enough to
+    /// straddle part of a rep, short enough that nobody waits for it.
+    private static let framesPerOrientation = 8
+
+    private var isCalibratingOrientation: Bool {
+        calibrationFrames < Self.candidateOrientations.count * Self.framesPerOrientation
+    }
+
+    /// For the debug overlay, so the choice can be checked rather than trusted.
+    private(set) var orientationLabel = "measuring"
+    private(set) var orientationConfidence: Double = 0
+
+    /// Starts the search again. Anything that changes what the camera sees -
+    /// a new session, a flip to the other lens - invalidates the old answer.
+    func recalibrateOrientation() {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.orientationScores = [:]
+            self.calibrationFrames = 0
+            self.imageOrientation = .up
+            self.orientationLabel = "measuring"
+        }
+    }
+
+    /// Mean confidence over the joints counting actually needs.
+    ///
+    /// Deliberately not `observation.confidence`, which rates the detection as
+    /// a whole and stays high while the specific joints the engine gates on
+    /// are weak - the exact failure that zeroed the count once already.
+    private static func score(_ observation: VNHumanBodyPoseObservation) -> Double {
+        guard let points = try? observation.recognizedPoints(.all) else { return 0 }
+        let needed: [VNHumanBodyPoseObservation.JointName] = [
+            .leftShoulder, .leftElbow, .leftWrist, .leftHip,
+            .rightShoulder, .rightElbow, .rightWrist, .rightHip,
+        ]
+        let confidences = needed.compactMap { points[$0]?.confidence }.map(Double.init)
+        guard !confidences.isEmpty else { return 0 }
+        return confidences.reduce(0, +) / Double(confidences.count)
+    }
+
+    private func recordCalibration(_ orientation: CGImagePropertyOrientation, score: Double) {
+        var entry = orientationScores[orientation] ?? (0, 0)
+        entry.total += score
+        entry.frames += 1
+        orientationScores[orientation] = entry
+        calibrationFrames += 1
+
+        guard !isCalibratingOrientation else { return }
+        let best = orientationScores
+            .map { (orientation: $0.key, mean: $0.value.frames == 0 ? 0 : $0.value.total / Double($0.value.frames)) }
+            .max { $0.mean < $1.mean }
+        guard let best, best.mean > 0 else {
+            imageOrientation = .up
+            orientationLabel = "up (no signal)"
+            return
+        }
+        imageOrientation = best.orientation
+        orientationConfidence = best.mean
+        orientationLabel = Self.name(best.orientation)
+    }
+
+    private static func name(_ orientation: CGImagePropertyOrientation) -> String {
+        switch orientation {
+        case .up: return "up"
+        case .right: return "right"
+        case .down: return "down"
+        case .left: return "left"
+        default: return "other"
+        }
+    }
 }
 
 extension PoseCameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -179,8 +273,15 @@ extension PoseCameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
 
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+
+        // While calibrating, this cycles; afterwards it is the winner.
+        let calibrating = isCalibratingOrientation
+        let orientation = calibrating
+            ? Self.candidateOrientations[calibrationFrames % Self.candidateOrientations.count]
+            : imageOrientation
+
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
-                                            orientation: imageOrientation,
+                                            orientation: orientation,
                                             options: [:])
         do {
             try handler.perform([request])
@@ -192,7 +293,20 @@ extension PoseCameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
         // them, rather than flickering between bodies mid-set.
         guard let observations = request.results as? [VNHumanBodyPoseObservation],
               let observation = observations.max(by: { $0.confidence < $1.confidence })
-        else { return }
+        else {
+            // A rotation that finds nobody at all is information, and scoring
+            // it zero is what stops the search settling on it.
+            if calibrating { recordCalibration(orientation, score: 0) }
+            return
+        }
+
+        if calibrating {
+            recordCalibration(orientation, score: Self.score(observation))
+            // Frames taken during the search came from rotations that are
+            // about to be discarded; feeding them to the counter would mean
+            // counting against a picture the app has decided is wrong.
+            return
+        }
 
         if startTime == nil { startTime = now }
         let elapsed = now - (startTime ?? now)
