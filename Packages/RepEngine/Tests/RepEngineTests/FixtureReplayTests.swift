@@ -98,6 +98,48 @@ final class FixtureReplayTests: XCTestCase {
         }
     }
 
+    /// Every rep the counter credits must also show up as a rep it judged.
+    ///
+    /// Found on a device recording that read "5 push-ups" and "attempted: 0" on
+    /// the same screen. Reps recovered by replay are judged inside a throwaway
+    /// shadow counter, so the visible diagnostics kept none of it: the summary
+    /// reported nothing judged and all four guard values at zero, which is the
+    /// exact signature the coach reads as "the camera never saw a rep at all"
+    /// and answers with advice about camera angle.
+    func testJudgedCandidatesSurviveReplay() throws {
+        for name in ["standard_10", "fatigue_12", "slow_deep_8", "weak_hip_10"] {
+            let fixture = try Self.load(name)
+            let engine = RepEngine()
+            var diagnostics = RepDiagnostics()
+            for frame in Self.poseFrames(fixture) {
+                diagnostics = engine.process(frame).diagnostics
+            }
+            XCTAssertGreaterThanOrEqual(
+                diagnostics.candidateReps, engine.count,
+                "\(name): counted \(engine.count) reps but reports \(diagnostics.candidateReps) judged")
+            // Replay re-judges a window the live pass already judged. Counting
+            // both would inflate this without bound, so it is pinned from above
+            // as well: a handful of genuine near-misses, not a second tally.
+            XCTAssertLessThanOrEqual(
+                diagnostics.candidateReps, engine.count + 4,
+                "\(name): \(diagnostics.candidateReps) judged for \(engine.count) reps looks double-counted")
+        }
+    }
+
+    /// The guard readout is what a stuck count is diagnosed from, so it has to
+    /// describe a real rep rather than the zeroes of a rep that never happened.
+    func testGuardValuesAreReportedForCountedReps() throws {
+        let fixture = try Self.load("standard_10")
+        let engine = RepEngine()
+        var diagnostics = RepDiagnostics()
+        for frame in Self.poseFrames(fixture) {
+            diagnostics = engine.process(frame).diagnostics
+        }
+        XCTAssertGreaterThan(engine.count, 0)
+        XCTAssertGreaterThan(diagnostics.lastTravel, 0, "travel reported as zero for a counted rep")
+        XCTAssertGreaterThan(diagnostics.lastDuration, 0, "duration reported as zero for a counted rep")
+    }
+
     // MARK: - Positive clips
 
     func testStandardSet() throws { try assertExact("standard_10") }

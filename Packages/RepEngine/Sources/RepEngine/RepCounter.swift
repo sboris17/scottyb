@@ -45,6 +45,19 @@ public final class RepCounter {
     private var repSamples: [(angle: Double, position: Point2D)] = []
     private var maxHipDeviation: Double?
 
+    /// Every candidate rep that got as far as being judged, with the reason it
+    /// was refused (nil means it counted).
+    ///
+    /// A list rather than a counter because replay deliberately re-judges a
+    /// window the live pass already judged. Counting each verdict as it happens
+    /// would inflate every total; keying on the rep's start time means the
+    /// replay's verdict supersedes the live one instead of adding to it.
+    private var judged: [(startedAt: Double, rejection: RepRejection?)] = []
+
+    /// Losing the pose mid-rep is not a judged candidate - nothing was measured
+    /// - and it is only ever raised on the live pass, so it cannot double-count.
+    private var poseLosses = 0
+
     public init(tuning: RepEngineTuning = RepEngineTuning()) {
         self.tuning = tuning
         self.thresholdsModel = AdaptiveThresholds(tuning: tuning)
@@ -59,7 +72,7 @@ public final class RepCounter {
         recordDiagnostics(signal)
         guard signal.isConfident else {
             // A skeleton that vanishes and comes back must never read as a rep.
-            if state == .bottom { note(.lostPose) }
+            if state == .bottom { notePoseLoss() }
             resetState()
             return
         }
@@ -91,6 +104,8 @@ public final class RepCounter {
         reps.removeAll()
         rejections.removeAll()
         recent.removeAll()
+        judged.removeAll()
+        poseLosses = 0
         calibratedOnce = false
         lastRepTime = 0
         lastRecalibration = 0
@@ -125,10 +140,37 @@ public final class RepCounter {
         }
     }
 
-    private func note(_ rejection: RepRejection) {
-        rejections.append(rejection)
+    private func notePoseLoss() {
+        poseLosses += 1
+        diagnostics.lastRejection = .lostPose
+        refreshJudgedDiagnostics()
+    }
+
+    /// Files one verdict on one candidate rep, replacing any earlier verdict on
+    /// the same rep. Reps are at least `minRepSeconds` apart, so matching on
+    /// start time within a tenth of a second cannot merge two distinct reps.
+    private func recordJudged(startedAt: Double, rejection: RepRejection?) {
+        if let existing = judged.firstIndex(where: { abs($0.startedAt - startedAt) < 0.1 }) {
+            judged[existing].rejection = rejection
+        } else {
+            judged.append((startedAt: startedAt, rejection: rejection))
+        }
         diagnostics.lastRejection = rejection
-        diagnostics.rejectionCounts[rejection.rawValue, default: 0] += 1
+        refreshJudgedDiagnostics()
+    }
+
+    /// Rebuilds the counts that are shown to the user from the deduplicated
+    /// record, so what the summary reports is what actually happened.
+    private func refreshJudgedDiagnostics() {
+        diagnostics.candidateReps = judged.count
+        var counts: [String: Int] = [:]
+        for candidate in judged {
+            if let rejection = candidate.rejection { counts[rejection.rawValue, default: 0] += 1 }
+        }
+        if poseLosses > 0 { counts[RepRejection.lostPose.rawValue] = poseLosses }
+        diagnostics.rejectionCounts = counts
+        rejections = judged.compactMap(\.rejection)
+            + Array(repeating: .lostPose, count: poseLosses)
     }
 
     private func shouldRecalibrate(at time: Double) -> Bool {
@@ -156,6 +198,20 @@ public final class RepCounter {
             lastRepTime = rep.endedAt
             thresholdsModel.record(minAngle: rep.minElbowAngle, maxAngle: rep.maxElbowAngle)
             onRep?(rep)
+        }
+
+        // The shadow does the judging during a replay, and it is discarded, so
+        // without this every rep it counted would leave the visible diagnostics
+        // reading "0 reps judged" and all four guard values at zero - while the
+        // counter happily climbed. Observed on device: 5 counted, 0 attempted.
+        for candidate in shadow.judged {
+            recordJudged(startedAt: candidate.startedAt, rejection: candidate.rejection)
+        }
+        if !shadow.judged.isEmpty {
+            diagnostics.lastTravel = shadow.diagnostics.lastTravel
+            diagnostics.lastCorrelation = shadow.diagnostics.lastCorrelation
+            diagnostics.lastReversals = shadow.diagnostics.lastReversals
+            diagnostics.lastDuration = shadow.diagnostics.lastDuration
         }
 
         // Adopt the shadow's in-flight state so counting continues seamlessly
@@ -208,7 +264,7 @@ public final class RepCounter {
             }
 
             if signal.time - repStartTime > tuning.maxRepSeconds {
-                note(.tooSlow)
+                recordJudged(startedAt: repStartTime, rejection: .tooSlow)
                 resetState()
                 return
             }
@@ -306,25 +362,30 @@ public final class RepCounter {
         // negated depth keeps the expected correlation positive.
         let correlation = Geometry.correlation(zip(repSamples.map(\.angle), depths.map { -$0 }).map { ($0, $1) })
         let reversals = directionReversals(depths)
-        diagnostics.candidateReps += 1
         diagnostics.lastTravel = travel
         diagnostics.lastCorrelation = correlation
         diagnostics.lastReversals = reversals
         diagnostics.lastDuration = duration
         let hipDeviation = maxHipDeviation
 
+        let refusal: RepRejection?
         if duration < tuning.minRepSeconds {
-            note(.tooFast)
+            refusal = .tooFast
         } else if travel < tuning.minBodyTravel {
             // Arms moved, body did not.
-            note(.noBodyTravel)
+            refusal = .noBodyTravel
         } else if correlation < tuning.minSignalCorrelation {
             // Body moved, but not in time with the arms.
-            note(.uncorrelated)
+            refusal = .uncorrelated
         } else if reversals > tuning.maxDirectionReversals {
             // The body juddered rather than travelled.
-            note(.notSmooth)
+            refusal = .notSmooth
         } else {
+            refusal = nil
+        }
+        recordJudged(startedAt: repStartTime, rejection: refusal)
+
+        if refusal == nil {
             let rep = CountedRep(index: reps.count + 1,
                                  startedAt: repStartTime,
                                  endedAt: signal.time,
@@ -334,7 +395,6 @@ public final class RepCounter {
                                  hipDeviation: hipDeviation)
             reps.append(rep)
             lastRepTime = signal.time
-            diagnostics.lastRejection = nil
             if !suppressAdaptation {
                 thresholdsModel.record(minAngle: rep.minElbowAngle, maxAngle: rep.maxElbowAngle)
             }
