@@ -11,6 +11,9 @@ struct ProfileView: View {
     @State private var exportFile: ExportFile?
     @State private var exportError: String?
     @AppStorage("showCountingDebug") private var showCountingDebug = true
+    // Replaying onboarding otherwise means deleting the app, which also throws
+    // away the history you were testing against.
+    @AppStorage("hasOnboarded") private var hasOnboarded = false
     @State private var authModel = AuthModel()
     @Environment(SyncCoordinator.self) private var syncer
     @Environment(\.modelContext) private var modelContext
@@ -62,6 +65,7 @@ struct ProfileView: View {
 
                 Section {
                     Toggle("Show counting debug", isOn: $showCountingDebug)
+                    Button("Show onboarding again") { hasOnboarded = false }
                     Button("Reset all progress", role: .destructive) { store.resetProgress() }
                 } header: {
                     Text("Testing")
