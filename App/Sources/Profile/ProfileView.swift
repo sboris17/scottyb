@@ -9,6 +9,7 @@ struct ProfileView: View {
     @State private var cadence: Feedback.Cadence = Feedback.shared.spokenCadence
     @State private var haptics = true
     @State private var exportFile: ExportFile?
+    @State private var confirmingReset = false
     @State private var exportError: String?
     @AppStorage("showCountingDebug") private var showCountingDebug = true
     // Replaying onboarding otherwise means deleting the app, which also throws
@@ -66,7 +67,7 @@ struct ProfileView: View {
                 Section {
                     Toggle("Show counting debug", isOn: $showCountingDebug)
                     Button("Show onboarding again") { hasOnboarded = false }
-                    Button("Reset all progress", role: .destructive) { store.resetProgress() }
+                    Button("Reset all progress", role: .destructive) { confirmingReset = true }
                 } header: {
                     Text("Testing")
                 } footer: {
@@ -105,6 +106,28 @@ struct ProfileView: View {
             }
             .sheet(item: $exportFile) { file in
                 ShareSheet(url: file.url)
+            }
+            // It deletes every workout on this phone and, when signed in, on
+            // the server as well. One tap was never the right amount of
+            // friction for that, and it is now less recoverable than it was.
+            .confirmationDialog("Reset all progress?",
+                                isPresented: $confirmingReset,
+                                titleVisibility: .visible) {
+                Button("Delete everything", role: .destructive) {
+                    Task {
+                        // Server first. Clearing the phone first and failing
+                        // here would leave rows behind that the next pull
+                        // quietly restores.
+                        await syncer.deleteEverythingRemote()
+                        store.resetProgress()
+                        syncer.refreshPendingCount(modelContext)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(authModel.isSignedIn
+                     ? "Every workout, streak and record is deleted from this phone and from your account. This cannot be undone."
+                     : "Every workout, streak and record on this phone is deleted. This cannot be undone.")
             }
         }
     }
@@ -188,6 +211,9 @@ private struct SyncStatusRow: View {
         switch syncer.status {
         case .failed(let reason): return reason
         case .idle(let last?):
+            // Anything under a minute came back as "in 0 seconds": future
+            // tense, for something that had already happened.
+            if Date().timeIntervalSince(last) < 60 { return "Last synced just now." }
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .full
             return "Last synced \(formatter.localizedString(for: last, relativeTo: Date()))."

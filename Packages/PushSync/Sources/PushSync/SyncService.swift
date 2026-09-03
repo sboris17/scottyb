@@ -69,6 +69,24 @@ public actor SyncService {
         try await expectSuccess(request)
     }
 
+    /// Deletes every workout this account has on the server.
+    ///
+    /// Needed because "reset all progress" is otherwise a lie once syncing
+    /// exists: the rows would come straight back on the next pull, and a
+    /// destructive action that silently undoes itself is worse than one that
+    /// refuses.
+    ///
+    /// Filtered on the user even though row-level security already restricts
+    /// it - PostgREST refuses an unfiltered delete, and that refusal is a good
+    /// safety net to keep rather than work around.
+    public func deleteAll(userID: String) async throws {
+        let url = config.restURL.appendingPathComponent("workout_sessions")
+            .appending(queryItems: [URLQueryItem(name: "user_id", value: "eq.\(userID)")])
+        var request = try await authorized(url, method: "DELETE")
+        request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        try await expectSuccess(request)
+    }
+
     public func pull(since: Date? = nil) async throws -> [RemoteSession] {
         var items = [URLQueryItem(name: "select", value: "*"),
                      URLQueryItem(name: "order", value: "started_at.desc")]

@@ -141,6 +141,27 @@ final class SyncCoordinator {
         if inserted > 0 { try context.save() }
     }
 
+    /// Clears this account's workouts from the server as well as the phone.
+    ///
+    /// Without it, "reset all progress" wipes the phone and the next pull puts
+    /// everything back - a destructive action that quietly undoes itself,
+    /// which is the worst of both. Returns whether the server was actually
+    /// cleared, so the caller can say so honestly rather than assume.
+    @discardableResult
+    func deleteEverythingRemote() async -> Bool {
+        guard let sync, let auth,
+              await auth.isSignedIn, let session = await auth.currentSession
+        else { return false }
+        do {
+            try await sync.deleteAll(userID: session.userID)
+            status = .idle(lastSynced: Date())
+            return true
+        } catch {
+            status = .failed(Self.describe(error))
+            return false
+        }
+    }
+
     // MARK: - Bookkeeping
 
     func refreshPendingCount(_ context: ModelContext) {
