@@ -10,6 +10,7 @@ struct ProfileView: View {
     @State private var haptics = true
     @State private var exportFile: ExportFile?
     @State private var confirmingReset = false
+    @State private var nameDraft = ""
     @State private var exportError: String?
     @AppStorage("showCountingDebug") private var showCountingDebug = true
     @AppStorage("recordPoseData") private var recordPoseData = false
@@ -23,6 +24,18 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    profileHeader
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 16, trailing: 0))
+                }
+
+                Section("Your name") {
+                    TextField("What should we call you?", text: $nameDraft)
+                        .onSubmit { store.updateDisplayName(nameDraft) }
+                        .submitLabel(.done)
+                }
+
                 Section("Daily goal") {
                     Stepper("\(goalDraft) push-ups", value: $goalDraft, in: 5...500, step: 5)
                         .onChange(of: goalDraft) { _, value in store.updateDailyGoal(value) }
@@ -65,17 +78,6 @@ struct ProfileView: View {
                     }
                 }
 
-                Section {
-                    Toggle("Show counting debug", isOn: $showCountingDebug)
-                    Toggle("Record sets for debugging", isOn: $recordPoseData)
-                    Button("Show onboarding again") { hasOnboarded = false }
-                    Button("Reset all progress", role: .destructive) { confirmingReset = true }
-                } header: {
-                    Text("Testing")
-                } footer: {
-                    Text("Overlays what the counter is seeing during a set \u{2014} angles, thresholds, and which check rejected a rep.\n\nRecording saves where your joints were, so a set can be replayed against the counter afterwards instead of guessed at. No video and nothing that identifies you: twelve coordinates a frame, and the summary asks what you really did so the clip means something.")
-                }
-
                 Section("Your numbers") {
                     LabeledContent("Lifetime", value: "\(store.records.lifetimeTotal)")
                     LabeledContent("Best set", value: "\(store.records.bestSet)")
@@ -91,10 +93,21 @@ struct ProfileView: View {
                 } footer: {
                     Text("Your data stays on your device and in your own iCloud. Camera frames are analysed and discarded \u{2014} never recorded, never uploaded.")
                 }
+                Section {
+                    Toggle("Show counting debug", isOn: $showCountingDebug)
+                    Toggle("Record sets for debugging", isOn: $recordPoseData)
+                    Button("Show onboarding again") { hasOnboarded = false }
+                    Button("Reset all progress", role: .destructive) { confirmingReset = true }
+                } header: {
+                    Text("Testing")
+                } footer: {
+                    Text("Overlays what the counter is seeing during a set \u{2014} angles, thresholds, and which check rejected a rep.\n\nRecording saves where your joints were, so a set can be replayed against the counter afterwards instead of guessed at. No video and nothing that identifies you: twelve coordinates a frame, and the summary asks what you really did so the clip means something.")
+                }
             }
-            .navigationTitle("You")
+            .navigationTitle("Profile")
             .onAppear {
                 goalDraft = store.profile.dailyGoal
+                nameDraft = store.profile.displayName
                 cadence = Feedback.shared.spokenCadence
                 haptics = Feedback.shared.hapticsEnabled
                 syncer.refreshPendingCount(modelContext)
@@ -132,6 +145,53 @@ struct ProfileView: View {
                      : "Every workout, streak and record on this phone is deleted. This cannot be undone.")
             }
         }
+    }
+
+    /// Who this is, and the one number worth leading with.
+    ///
+    /// The screen was a settings list with a heading of "You" and nothing on
+    /// it that was about anybody. A name, how long you have been at it, and
+    /// your lifetime total costs one card and makes the rest read as yours
+    /// rather than as preferences.
+    private var profileHeader: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Push.Palette.accent.opacity(0.18))
+                    .frame(width: 76, height: 76)
+                Text(initials)
+                    .font(Push.Typography.stat(28))
+                    .foregroundStyle(Push.Palette.accent)
+            }
+            Text(store.profile.displayName.isEmpty ? "Push-up in progress" : store.profile.displayName)
+                .font(Push.Typography.title)
+                .foregroundStyle(Push.Palette.textPrimary)
+            Text(memberSince)
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textSecondary)
+
+            HStack(spacing: 10) {
+                StatChip(emoji: "\u{1F4AA}", value: "\(store.records.lifetimeTotal)", caption: "Lifetime")
+                StatChip(emoji: "\u{1F525}", value: "\(store.currentStreak)", caption: "Streak")
+                StatChip(emoji: "\u{1F3C6}", value: "\(store.records.bestSet)", caption: "Best set")
+            }
+            .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var initials: String {
+        let parts = store.profile.displayName
+            .split(separator: " ")
+            .compactMap(\.first)
+            .prefix(2)
+        return parts.isEmpty ? "\u{1F4AA}" : String(parts).uppercased()
+    }
+
+    private var memberSince: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return "Pushing since \(formatter.string(from: store.profile.createdAt))"
     }
 
     private func export() {

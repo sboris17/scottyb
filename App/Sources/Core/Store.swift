@@ -251,6 +251,14 @@ final class Store {
         refresh()
     }
 
+    func updateDisplayName(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != profile.displayName else { return }
+        profile.displayName = trimmed
+        profile.modifiedAt = Date()
+        save()
+    }
+
     func updateDailyGoal(_ goal: Int) {
         profile.dailyGoal = max(1, goal)
         profile.modifiedAt = Date()

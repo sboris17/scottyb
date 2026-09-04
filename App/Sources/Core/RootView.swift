@@ -51,7 +51,7 @@ struct MainTabs: View {
                 .tabItem { Label("Stats", systemImage: "chart.bar.fill") }
                 .tag(Screenshots.Tab.stats)
             ProfileView()
-                .tabItem { Label("You", systemImage: "person.fill") }
+                .tabItem { Label("Profile", systemImage: "person.fill") }
                 .tag(Screenshots.Tab.you)
         }
     }

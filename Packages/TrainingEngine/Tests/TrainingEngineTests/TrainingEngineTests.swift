@@ -131,3 +131,46 @@ final class RecommenderTests: XCTestCase {
         }
     }
 }
+
+/// The check that would have caught a week of prescribing sets of three to
+/// somebody who had already recorded a set of 28.
+final class ProgramFitTests: XCTestCase {
+    func testFirstTenIsOutgrownBySomeoneDoing28() {
+        XCTAssertEqual(ProgramFit.evaluate(program: ProgramLibrary.firstTen, bestSet: 28), .outgrown)
+    }
+
+    func testFirstTenSuitsABeginner() {
+        XCTAssertEqual(ProgramFit.evaluate(program: ProgramLibrary.firstTen, bestSet: 2), .good)
+    }
+
+    func testRoadTo100IsTooHardForABeginner() {
+        XCTAssertEqual(ProgramFit.evaluate(program: ProgramLibrary.roadTo(100), bestSet: 1), .tooHard)
+    }
+
+    /// A judgement on no evidence is worse than no judgement, so a fresh
+    /// account is never nagged.
+    func testNoHistoryMeansNoOpinion() {
+        XCTAssertEqual(ProgramFit.evaluate(program: ProgramLibrary.firstTen, bestSet: 0), .good)
+        XCTAssertNil(ProgramFit.suggestion(current: ProgramLibrary.firstTen, bestSet: 0))
+    }
+
+    func testSuggestsTheProgrammeThatActuallyFits() {
+        let suggested = ProgramFit.suggestion(current: ProgramLibrary.firstTen, bestSet: 28)
+        XCTAssertEqual(suggested?.slug, "road-to-50")
+    }
+
+    /// Never suggests a switch to the programme already in use, which would
+    /// read as the app not knowing what it is doing.
+    func testNeverSuggestsTheCurrentProgramme() {
+        // Outgrown, but the honest recommendation is the programme already in
+        // use - there is nothing above Road to 100. Suggesting a switch to
+        // where you already are reads as the app not knowing what it is doing.
+        let top = ProgramLibrary.roadTo(100)
+        XCTAssertEqual(ProgramFit.evaluate(program: top, bestSet: 100), .outgrown)
+        XCTAssertNil(ProgramFit.suggestion(current: top, bestSet: 100))
+    }
+
+    func testAGoodFitSuggestsNothing() {
+        XCTAssertNil(ProgramFit.suggestion(current: ProgramLibrary.roadTo(50), bestSet: 20))
+    }
+}
