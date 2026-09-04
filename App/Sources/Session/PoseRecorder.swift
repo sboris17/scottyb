@@ -21,7 +21,13 @@ import RepEngine
 /// The output is deliberately the same JSON the fixture suite already reads,
 /// so a recording drops into `Packages/RepEngine/Tests/RepEngineTests/Fixtures`
 /// and `Tools/RepEngineSim/run.py` with nothing to convert.
-@MainActor
+///
+/// Not actor-isolated, and that is a decision rather than an oversight. This is
+/// a passive buffer with no async work of its own, reached from exactly two
+/// places, both already on the main thread: `SessionModel.ingest`, which is
+/// only ever called from the main-queue hop in `PoseCameraController`, and the
+/// summary view. Isolating it would mean isolating `SessionModel` too, which
+/// drags in the rest-timer callback for no gain here.
 final class PoseRecorder {
 
     /// The order joints are written in, and the order they are read back in.
