@@ -6,10 +6,16 @@ import SwiftData
 // is much cheaper than migrating into it later.
 
 public enum CountingMode: String, Codable, Sendable, CaseIterable {
-    case camera, watch, manual
+    case camera, watch, manual, proximity
 
     /// Only sensed reps can ever back a leaderboard claim. Manual reps stay
     /// fully valid for streaks, goals and personal statistics.
+    ///
+    /// Proximity counts as sensed: the sensor cannot fire without a chest
+    /// actually reaching the floor, which is a stricter depth check than the
+    /// camera applies. It is easier to fool deliberately - a hand over the
+    /// sensor does it - so if leaderboards ever ship, revisit whether they
+    /// want camera only. That is a product decision, not a technical one.
     public var isVerifiable: Bool { self != .manual }
 }
 

@@ -17,7 +17,7 @@ final class SessionModel {
     }
 
     enum Mode: Equatable {
-        case camera, manual
+        case camera, proximity, manual
     }
 
     // MARK: - Configuration
@@ -58,6 +58,7 @@ final class SessionModel {
     /// frames the engine already liked would be useless for finding out why it
     /// dislikes the others.
     let recorder = PoseRecorder()
+    let proximity = ProximityCounter()
     var isRecording = UserDefaults.standard.bool(forKey: "recordPoseData")
 
     private var countingStartedAt: Date?
@@ -118,7 +119,7 @@ final class SessionModel {
     private var draft: SessionDraft {
         SessionDraft(startedAt: startedAt,
                      source: source,
-                     countingMode: mode == .camera ? .camera : .manual,
+                     countingMode: storedCountingMode,
                      programSlug: programSlug,
                      programDayIndex: programDayIndex,
                      targets: prescription.map(\.targetReps),
@@ -170,6 +171,33 @@ final class SessionModel {
         // the camera path this is also the last cue before a silence that,
         // until now, was indistinguishable from the app not working.
         Feedback.shared.setBeginning(first + 1)
+    }
+
+    /// How this session gets recorded. Proximity is a sensed mode, not a
+    /// manual one, and recording it as manual would quietly strip it of
+    /// verification it has actually earned.
+    private var storedCountingMode: CountingMode {
+        switch mode {
+        case .camera: return .camera
+        case .proximity: return .proximity
+        case .manual: return .manual
+        }
+    }
+
+    /// Floor mode. Counting starts immediately: there is nothing to frame, no
+    /// preview to check and no placement to get right, which is the entire
+    /// reason for it.
+    func switchToProximity() {
+        shouldOfferManual = false
+        framingIssue = nil
+        proximity.reset()
+        proximity.onRep = { [weak self] _ in self?.registerRep() }
+        proximity.start()
+
+        // iPad, the simulator, or hardware without the sensor. Falling back to
+        // tapping is far better than a mode that looks live and counts
+        // nothing - which is the failure this whole app has been fighting.
+        mode = proximity.availability == .ready ? .proximity : .manual
     }
 
     func switchToManual() {
@@ -315,6 +343,7 @@ final class SessionModel {
         let counted = completedSets[completedSets.count - 1]
         repsThisSet = 0
         engine.reset()
+        proximity.reset()
         hasAnnouncedTracking = false
         countingStartedAt = Date()
 
@@ -367,6 +396,7 @@ final class SessionModel {
         if completedSets.allSatisfy({ $0 == 0 }) && mode == .camera {
             failureDiagnostics = diagnostics
         }
+        proximity.stop()
         onSessionEnded?()
         phase = .finished
     }
@@ -378,7 +408,7 @@ final class SessionModel {
             startedAt: startedAt,
             endedAt: Date(),
             source: source,
-            countingMode: mode == .camera ? .camera : .manual,
+            countingMode: storedCountingMode,
             programSlug: programSlug,
             programDayIndex: programDayIndex,
             // Sets the user never reached are recorded as zero rather than

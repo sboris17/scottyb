@@ -149,3 +149,77 @@ final class DiagnosticAccountingTests: XCTestCase {
         XCTAssertEqual(counter.diagnostics.jointConfidence, 0.22, accuracy: 1e-9)
     }
 }
+
+/// Floor mode's counting, which is one bit of input and therefore easy to
+/// believe is too simple to get wrong. Every counting bug in this project so
+/// far has been in code that looked exactly that simple.
+final class ProximityRepCounterTests: XCTestCase {
+    private func rep(_ counter: inout ProximityRepCounter, down: Double, up: Double) {
+        counter.update(near: true, at: down)
+        counter.update(near: false, at: up)
+    }
+
+    func testCountsOnTheWayUp() {
+        var counter = ProximityRepCounter()
+        XCTAssertFalse(counter.update(near: true, at: 0), "going down is not a rep on its own")
+        XCTAssertTrue(counter.update(near: false, at: 1), "coming up completes it")
+        XCTAssertEqual(counter.count, 1)
+    }
+
+    func testCountsATidySet() {
+        var counter = ProximityRepCounter()
+        for i in 0..<10 {
+            rep(&counter, down: Double(i) * 2, up: Double(i) * 2 + 1)
+        }
+        XCTAssertEqual(counter.count, 10)
+    }
+
+    /// Repeated readings of the same state arrive constantly; only changes are
+    /// transitions.
+    func testRepeatedSameStateIsNotARep() {
+        var counter = ProximityRepCounter()
+        counter.update(near: true, at: 0)
+        for i in 1...20 { counter.update(near: true, at: Double(i) * 0.1) }
+        counter.update(near: false, at: 3)
+        for i in 1...20 { counter.update(near: false, at: 3 + Double(i) * 0.1) }
+        XCTAssertEqual(counter.count, 1)
+    }
+
+    func testBouncesAreRejected() {
+        var counter = ProximityRepCounter()
+        rep(&counter, down: 0, up: 0.5)
+        // Down and up again almost immediately: a bounce, not a second rep.
+        rep(&counter, down: 0.6, up: 0.8)
+        XCTAssertEqual(counter.count, 1, "0.3s after the last rep is a bounce")
+    }
+
+    /// Resting face-down between sets, then getting up, is not a rep.
+    func testRestingOnTheSensorIsNotOneVerySlowRep() {
+        var counter = ProximityRepCounter()
+        rep(&counter, down: 0, up: 30)
+        XCTAssertEqual(counter.count, 0)
+    }
+
+    /// Starting a set already lying on the phone must not credit a rep for
+    /// simply getting up off it. `prime` records the state without inventing
+    /// the descent that never happened.
+    func testPrimingAvoidsAPhantomFirstRep() {
+        var counter = ProximityRepCounter()
+        counter.prime(near: true)
+        XCTAssertFalse(counter.update(near: false, at: 1))
+        XCTAssertEqual(counter.count, 0)
+
+        // And normal counting still works from there.
+        rep(&counter, down: 2, up: 3)
+        XCTAssertEqual(counter.count, 1)
+    }
+
+    func testResetClearsEverything() {
+        var counter = ProximityRepCounter()
+        rep(&counter, down: 0, up: 1)
+        counter.reset()
+        XCTAssertEqual(counter.count, 0)
+        rep(&counter, down: 0.1, up: 0.2)
+        XCTAssertEqual(counter.count, 1, "the bounce guard must not survive a reset")
+    }
+}

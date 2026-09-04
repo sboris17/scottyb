@@ -35,7 +35,16 @@ struct SessionContainerView: View {
             case .framing:
                 FramingView(model: model, camera: camera, error: cameraError) {
                     model.begin(mode: .camera)
+                } onFloor: {
+                    // The camera is pointless in floor mode and costs battery
+                    // and heat for nothing.
+                    camera.stop()
+                    model.switchToProximity()
+                    // Whatever it settled on: proximity, or manual if this
+                    // device has no sensor.
+                    model.begin(mode: model.mode)
                 } onManual: {
+                    camera.stop()
                     model.switchToManual()
                     model.begin(mode: .manual)
                 }
@@ -103,6 +112,7 @@ private struct FramingView: View {
     let camera: PoseCameraController
     let error: String?
     let onReady: () -> Void
+    let onFloor: () -> Void
     let onManual: () -> Void
 
     var body: some View {
@@ -153,6 +163,12 @@ private struct FramingView: View {
 
             VStack(spacing: 10) {
                 PrimaryButton(model.framingIssue == nil ? "I'm ready" : "Start anyway", action: onReady)
+                // Offered at the same level as the camera rather than hidden
+                // as a fallback. For most people, most of the time, it is
+                // simply the better method: nothing to frame, nothing to light,
+                // and the screen ends up under your face instead of across the
+                // room.
+                SecondaryButton("Use floor mode instead", action: onFloor)
                 // Never a dead end: manual is always one tap away, never
                 // buried behind a menu.
                 SecondaryButton("Count manually instead", action: onManual)
@@ -218,6 +234,11 @@ private struct CountingView: View {
                     .foregroundStyle(Push.Palette.flame)
                     .padding(.top, 18)
                     .transition(.opacity)
+            }
+
+            if model.mode == .proximity {
+                FloorModeHint(isNear: model.proximity.isNear)
+                    .padding(.top, 12)
             }
 
             if model.mode == .camera {
@@ -349,5 +370,40 @@ private struct RestView: View {
                 .padding(.horizontal)
         }
         .padding()
+    }
+}
+
+
+/// What to do, and proof the sensor is awake.
+///
+/// The dot is the important half. Floor mode has no preview and no skeleton,
+/// so without it the screen looks identical whether the sensor is reading your
+/// chest or nothing at all - and "looks alive, counts nothing" is exactly the
+/// failure this mode exists to escape.
+private struct FloorModeHint: View {
+    let isNear: Bool
+
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(isNear ? Push.Palette.accent : Push.Palette.track)
+                    .frame(width: 10, height: 10)
+                Text(isNear ? "Chest detected" : "Waiting for your chest")
+                    .font(Push.Typography.caption)
+                    .foregroundStyle(Push.Palette.textSecondary)
+            }
+            Text("Phone flat on the floor, screen up, top edge under your chest. Lower until you nearly touch it.")
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textSecondary)
+                .multilineTextAlignment(.center)
+            // Said up front because it looks like a fault otherwise, and a
+            // person who thinks the app crashed mid-set stops the set.
+            Text("The screen goes dark each time you come down. That is the sensor working.")
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textSecondary.opacity(0.7))
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 24)
     }
 }
