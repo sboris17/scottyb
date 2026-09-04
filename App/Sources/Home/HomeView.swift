@@ -25,12 +25,7 @@ struct HomeView: View {
                     if workout?.isRecoveryDay == true {
                         recoveryCard
                     } else {
-                        PrimaryButton("START", systemImage: "play.fill") {
-                            activeSession = programLaunch()
-                        }
-                        SecondaryButton("Just Push") {
-                            activeSession = SessionLaunch(prescription: [], source: .justPush)
-                        }
+                        startBlock
                     }
                     statsRow
                     if store.currentStreak > 0 { streakCard }
@@ -95,15 +90,49 @@ struct HomeView: View {
         return Double(store.todayReps) / Double(store.profile.dailyGoal)
     }
 
+    /// One button, with today's sets written on it.
+    ///
+    /// There used to be two: START and Just Push. They open the same screen
+    /// and differ only in whether it carries targets, which is invisible from
+    /// the outside - so it read as a primary action and a lesser version of
+    /// it, rather than a choice. Now there is one thing to press, and what it
+    /// is about to ask of you is written underneath rather than sitting in an
+    /// unlabelled row further up.
+    ///
+    /// Counting without a plan is kept, deliberately quietly. It is a real
+    /// thing somebody wants at 11pm when the plan is not happening, and
+    /// deleting it to tidy the screen would cost more than it saves.
+    @ViewBuilder
+    private var startBlock: some View {
+        VStack(spacing: 10) {
+            PrimaryButton("START", systemImage: "play.fill") {
+                activeSession = programLaunch()
+            }
+            if let plan = todaysPlanSummary {
+                Text(plan)
+                    .font(Push.Typography.caption)
+                    .foregroundStyle(Push.Palette.textSecondary)
+            }
+            Button("Just count, no plan") {
+                activeSession = SessionLaunch(prescription: [], source: .justPush)
+            }
+            .font(Push.Typography.caption)
+            .foregroundStyle(Push.Palette.textSecondary)
+            .padding(.top, 2)
+        }
+    }
+
+    /// "10 · 5" rather than "10 / 5": a middot reads as a list of sets, where
+    /// a slash reads as a fraction - which is what made it collide with the
+    /// "of 60" directly above it.
+    private var todaysPlanSummary: String? {
+        guard let workout, !workout.isRecoveryDay, !workout.sets.isEmpty else { return nil }
+        let sets = workout.sets.map { "\($0.targetReps)" }.joined(separator: " · ")
+        return "Today: \(sets)"
+    }
+
     private var todayCard: some View {
         VStack(spacing: 18) {
-            if let workout, !workout.isRecoveryDay {
-                Text(workout.summary.uppercased())
-                    .font(Push.Typography.label)
-                    .tracking(2)
-                    .foregroundStyle(Push.Palette.accent)
-            }
-
             ZStack {
                 ProgressRing(progress: goalProgress, lineWidth: 16)
                     .frame(width: 220, height: 220)

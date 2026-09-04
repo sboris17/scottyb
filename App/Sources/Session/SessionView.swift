@@ -14,6 +14,14 @@ struct SessionContainerView: View {
 
     @State private var model: SessionModel
     @State private var camera = PoseCameraController()
+    /// Survives the framing-to-counting transition; see `CameraPreview`.
+    ///
+    /// Held behind a holder rather than as `@State private var view = ...`
+    /// because UIView is main-actor isolated and a SwiftUI struct's stored
+    /// property initialiser is not - the same mismatch that broke the build
+    /// once already. The holder's own init does nothing, and the view is made
+    /// on first access from `body`, which is on the main actor.
+    @State private var previewHolder = PreviewHolder()
     @State private var cameraError: String?
     @State private var summary: IdentifiedResult?
 
@@ -33,7 +41,7 @@ struct SessionContainerView: View {
 
             switch model.phase {
             case .framing:
-                FramingView(model: model, camera: camera, error: cameraError) {
+                FramingView(model: model, camera: camera, preview: previewHolder.view, error: cameraError) {
                     model.begin(mode: .camera)
                 } onFloor: {
                     // The camera is pointless in floor mode and costs battery
@@ -49,7 +57,7 @@ struct SessionContainerView: View {
                     model.begin(mode: .manual)
                 }
             case .counting:
-                CountingView(model: model, camera: camera)
+                CountingView(model: model, camera: camera, preview: previewHolder.view)
             case .resting:
                 RestView(model: model)
             case .finished:
@@ -99,6 +107,19 @@ struct SessionContainerView: View {
     }
 }
 
+/// Lazily makes the shared preview view, on the main actor.
+final class PreviewHolder {
+    private var stored: CameraPreview.PreviewView?
+
+    @MainActor
+    var view: CameraPreview.PreviewView {
+        if let stored { return stored }
+        let created = CameraPreview.PreviewView()
+        stored = created
+        return created
+    }
+}
+
 struct IdentifiedResult: Identifiable {
     let id = UUID()
     let value: SessionResult
@@ -110,6 +131,7 @@ struct IdentifiedResult: Identifiable {
 private struct FramingView: View {
     let model: SessionModel
     let camera: PoseCameraController
+    let preview: CameraPreview.PreviewView
     let error: String?
     let onReady: () -> Void
     let onFloor: () -> Void
@@ -117,7 +139,7 @@ private struct FramingView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            CameraPreview(session: camera.captureSession)
+            CameraPreview(session: camera.captureSession, view: preview)
                 .overlay { SkeletonOverlay(frame: model.lastFrame) }
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .overlay(alignment: .topTrailing) {
@@ -179,12 +201,27 @@ private struct FramingView: View {
     }
 }
 
+/// The live camera picture.
+///
+/// Backed by one long-lived view rather than a fresh one per screen. Framing
+/// and counting used to build their own, so moving between them tore one down
+/// and attached another to the same running session - which is a black
+/// rectangle for several seconds while the new layer finds its first frame.
+/// It looked exactly like the app had frozen at the moment you got on the
+/// floor.
 struct CameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
+    let view: PreviewView
+
+    init(session: AVCaptureSession, view: PreviewView) {
+        self.session = session
+        self.view = view
+    }
 
     func makeUIView(context: Context) -> PreviewView {
-        let view = PreviewView()
-        view.videoPreviewLayer.session = session
+        if view.videoPreviewLayer.session !== session {
+            view.videoPreviewLayer.session = session
+        }
         view.videoPreviewLayer.videoGravity = .resizeAspect
         return view
     }
@@ -202,6 +239,7 @@ struct CameraPreview: UIViewRepresentable {
 private struct CountingView: View {
     @Bindable var model: SessionModel
     let camera: PoseCameraController
+    let preview: CameraPreview.PreviewView
     @Environment(\.dismiss) private var dismiss
     @AppStorage("showCountingDebug") private var showDebug = true
 
@@ -244,7 +282,7 @@ private struct CountingView: View {
             if model.mode == .camera {
                 // A live view of what is being tracked, mid-set. Without it a
                 // count that does not move gives you nothing to act on.
-                CameraPreview(session: camera.captureSession)
+                CameraPreview(session: camera.captureSession, view: preview)
                     .overlay { SkeletonOverlay(frame: model.lastFrame) }
                     .frame(height: 150)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -258,6 +296,18 @@ private struct CountingView: View {
                         .padding(8)
                     }
                     .padding(.top, 8)
+
+                // The rotation search takes a couple of seconds at the start of
+                // a set, during which no skeleton is drawn. Unlabelled that is
+                // indistinguishable from the tracking having failed, which is
+                // the state this app has spent a week teaching somebody to
+                // dread.
+                if model.orientationLabel == "measuring" {
+                    Text("Getting ready\u{2026}")
+                        .font(Push.Typography.caption)
+                        .foregroundStyle(Push.Palette.textSecondary)
+                        .padding(.top, 6)
+                }
 
                 if let advice = CountingCoach.advice(for: model.diagnostics,
                                                     countedReps: model.repsThisSet) {
