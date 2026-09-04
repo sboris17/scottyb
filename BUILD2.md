@@ -91,7 +91,23 @@ deliberately not styled as a warning, because nothing is at risk.
   exist in `schema.sql`; nothing writes to `profiles` from the client yet.
 - Any social feature. Friends and leaderboards need a second look at the
   schema, not just a sync call.
-- None of the sync paths have run against a real Supabase project yet. The
-  pieces are unit-tested (`Packages/PushSync`, 18 tests) but the first run
-  against live tables is the one that finds the surprises — expect to hit at
-  least one, and the failure will be visible in Profile rather than silent.
+## Confirmed working on device
+
+Sign in with Apple, account creation, and a workout reaching
+`workout_sessions` in Supabase have all been verified end to end on a real
+device against a real project. The path is no longer theoretical.
+
+Three bugs were found doing it, all in the client and all worth knowing about
+if this is ever rebuilt:
+
+1. `AuthModel` was observable but not `@MainActor`, so the session was
+   established on a background thread and SwiftUI never saw it.
+2. One exit path left the state untouched, which renders as a spinner forever.
+3. The one that actually caused it: tapping the button set the state to
+   `signingIn`, which swapped `SignInWithAppleButton` out for a spinner —
+   unmounting the button and destroying the authorization request attached to
+   it. Apple's sheet completed against a callback that no longer existed.
+
+The third is the trap worth remembering: **never remove the Apple button from
+the view hierarchy while its request is in flight.** It fails silently, and
+the symptom is a spinner that carries no information at all.

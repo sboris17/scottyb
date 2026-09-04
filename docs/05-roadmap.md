@@ -90,6 +90,12 @@ Recommendation: stay on CloudKit private for V1, then move to a managed backend
 (Supabase) when friends ship — and migrate the user's data, don't ask them to
 start over.
 
+**Status: Supabase is built and verified on device**, ahead of this schedule.
+Sign in with Apple, account creation and workout sync all work against a live
+project. The reasoning above still stands for anyone revisiting the choice; it
+just happened earlier than planned, which means the friends work in M5 is
+unblocked whenever counting is trustworthy enough to compete on.
+
 ## Open questions
 
 These are product calls, not engineering ones, and they're worth deciding
