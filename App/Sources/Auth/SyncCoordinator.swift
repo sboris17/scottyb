@@ -89,26 +89,44 @@ final class SyncCoordinator {
 
     // MARK: - Up
 
+    /// Nothing from the database is held across the upload.
+    ///
+    /// It used to be: the pending `Session` objects were fetched, sent, and
+    /// then written back to after the `await`. That is a live database object
+    /// carried across a network call, and this sync fires the instant a
+    /// workout ends - the same moment the store is saving the new session,
+    /// refreshing its totals and presenting the summary. Any of those can
+    /// invalidate the objects being held, and touching one afterwards takes
+    /// the app down.
+    ///
+    /// So the values are copied out first, and the rows are found again by id
+    /// afterwards. Anything that vanished in between is simply not marked, and
+    /// gets retried - which is the correct outcome anyway.
     private func push(_ context: ModelContext, userID: String, using sync: SyncService) async throws {
-        let pending = try context.fetch(FetchDescriptor<Session>()).filter(\.needsSync)
-        guard !pending.isEmpty else { return }
+        let payload: [RemoteSession] = try context.fetch(FetchDescriptor<Session>())
+            .filter(\.needsSync)
+            .map { session in
+                RemoteSession(id: session.id,
+                              userId: userID,
+                              startedAt: session.startedAt,
+                              endedAt: session.endedAt,
+                              totalReps: session.totalReps,
+                              bestSet: session.bestSet,
+                              countingMode: session.countingModeRaw,
+                              isVerified: session.isVerified,
+                              programSlug: session.programSlug)
+            }
+        guard !payload.isEmpty else { return }
+        let sent = Set(payload.map(\.id))
 
-        let payload = pending.map { session in
-            RemoteSession(id: session.id,
-                          userId: userID,
-                          startedAt: session.startedAt,
-                          endedAt: session.endedAt,
-                          totalReps: session.totalReps,
-                          bestSet: session.bestSet,
-                          countingMode: session.countingModeRaw,
-                          isVerified: session.isVerified,
-                          programSlug: session.programSlug)
-        }
         try await sync.push(payload)
 
-        // Only now. If this line is reached, the server has the rows.
+        // Only now, and against rows fetched fresh. If this is reached, the
+        // server has them.
         let acknowledged = Date()
-        for session in pending { session.syncedAt = acknowledged }
+        for session in try context.fetch(FetchDescriptor<Session>()) where sent.contains(session.id) {
+            session.syncedAt = acknowledged
+        }
         try context.save()
     }
 
