@@ -12,6 +12,7 @@ struct ProfileView: View {
     @State private var confirmingReset = false
     @State private var exportError: String?
     @AppStorage("showCountingDebug") private var showCountingDebug = true
+    @AppStorage("recordPoseData") private var recordPoseData = false
     // Replaying onboarding otherwise means deleting the app, which also throws
     // away the history you were testing against.
     @AppStorage("hasOnboarded") private var hasOnboarded = false
@@ -66,12 +67,13 @@ struct ProfileView: View {
 
                 Section {
                     Toggle("Show counting debug", isOn: $showCountingDebug)
+                    Toggle("Record sets for debugging", isOn: $recordPoseData)
                     Button("Show onboarding again") { hasOnboarded = false }
                     Button("Reset all progress", role: .destructive) { confirmingReset = true }
                 } header: {
                     Text("Testing")
                 } footer: {
-                    Text("Overlays what the counter is seeing during a set \u{2014} angles, thresholds, and which check rejected a rep. Also lets you cycle the camera rotation if counts look wrong.")
+                    Text("Overlays what the counter is seeing during a set \u{2014} angles, thresholds, and which check rejected a rep.\n\nRecording saves where your joints were, so a set can be replayed against the counter afterwards instead of guessed at. No video and nothing that identifies you: twelve coordinates a frame, and the summary asks what you really did so the clip means something.")
                 }
 
                 Section("Your numbers") {

@@ -51,6 +51,15 @@ final class SessionModel {
     /// summary can explain itself once the phone is back in your hand.
     private(set) var failureDiagnostics: RepDiagnostics?
 
+    /// Captures the set for replay when the recording switch is on.
+    ///
+    /// Held here rather than in the view because it has to see every frame,
+    /// including the ones the counter rejects - a clip that only contained
+    /// frames the engine already liked would be useless for finding out why it
+    /// dislikes the others.
+    let recorder = PoseRecorder()
+    var isRecording = UserDefaults.standard.bool(forKey: "recordPoseData")
+
     private var countingStartedAt: Date?
     private var lastSpokenAdviceAt: Date?
     private var spokenAdviceCount = 0
@@ -151,6 +160,7 @@ final class SessionModel {
         startedAt = Date()
         Feedback.shared.prepare()
         // Resuming starts at the set after the last one banked.
+        if isRecording { recorder.reset() }
         let first = min(completedSets.count, prescription.count - 1)
         phase = .counting(setIndex: first)
         repsThisSet = 0
@@ -174,6 +184,10 @@ final class SessionModel {
     func ingest(_ frame: PoseFrame) {
         guard mode == .camera else { return }
         lastFrame = frame
+        // Before the framing guard and before the counter: the whole value of
+        // a recording is that it contains what actually arrived, not what
+        // survived.
+        if isRecording { recorder.record(frame) }
 
         if case .framing = phase {
             framingIssue = framingCheck.evaluate(frame)

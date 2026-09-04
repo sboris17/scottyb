@@ -64,7 +64,9 @@ struct SessionContainerView: View {
         // Held as state rather than derived in a Binding getter: a getter that
         // mints a fresh id on every evaluation makes SwiftUI re-present forever.
         .fullScreenCover(item: $summary) { wrapper in
-            SessionSummaryView(result: wrapper.value) { dismiss() }
+            SessionSummaryView(result: wrapper.value,
+                               onDone: { dismiss() },
+                               recorder: model.isRecording ? model.recorder : nil)
                 .environment(store)
         }
         // The set survives a phone call or a stray notification.

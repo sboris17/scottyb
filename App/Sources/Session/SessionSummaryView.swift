@@ -8,6 +8,12 @@ struct SessionSummaryView: View {
     let result: SessionResult
     let onDone: () -> Void
 
+    /// Present only when a set was recorded. The summary is the right place to
+    /// ask for the true count: the phone is back in your hand and the set just
+    /// happened, which is the only moment the real number is both known and
+    /// still remembered.
+    var recorder: PoseRecorder? = nil
+
     private var duration: String {
         let seconds = Int(result.endedAt.timeIntervalSince(result.startedAt))
         return seconds < 60 ? "\(seconds)s" : "\(seconds / 60)m \(seconds % 60)s"
@@ -16,6 +22,9 @@ struct SessionSummaryView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Push.Metrics.gutter) {
+                if let recorder, !recorder.isEmpty {
+                    RecordingPanel(recorder: recorder, counted: result.totalReps)
+                }
                 VStack(spacing: 4) {
                     HeroCount(result.totalReps, label: "push-ups")
                     Text(result.setResults.filter { $0.completedReps > 0 }
@@ -138,4 +147,108 @@ private struct CountingFailurePanel: View {
                 .multilineTextAlignment(.trailing)
         }
     }
+}
+
+
+/// Turns a recorded set into a labelled clip.
+///
+/// The label is the entire point. Pose data on its own proves nothing about
+/// counting, because the count is the thing in question - only a human saying
+/// "that was twelve" turns a recording into evidence. So the number is asked
+/// for plainly, prefilled with what the app thought, and it is easy to
+/// disagree with.
+private struct RecordingPanel: View {
+    let recorder: PoseRecorder
+    let counted: Int
+
+    @State private var actualReps: Int = 0
+    @State private var note = ""
+    @State private var file: RecordingFile?
+    @State private var error: String?
+    @State private var hasPrefilled = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("SET RECORDED")
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.accent)
+
+            Text("How many did you actually do?")
+                .font(Push.Typography.headline)
+                .foregroundStyle(Push.Palette.textPrimary)
+
+            Stepper("\(actualReps) push-ups", value: $actualReps, in: 0...500)
+                .font(Push.Typography.body)
+                .foregroundStyle(Push.Palette.textPrimary)
+
+            if actualReps != counted {
+                Text("The app counted \(counted). This clip records the miss.")
+                    .font(Push.Typography.caption)
+                    .foregroundStyle(Push.Palette.flame)
+            }
+
+            TextField("Note — where the phone was, lighting, anything odd",
+                      text: $note, axis: .vertical)
+                .font(Push.Typography.caption)
+                .lineLimit(1...3)
+                .textFieldStyle(.roundedBorder)
+
+            PrimaryButton("Send recording") { export() }
+
+            if let error {
+                Text(error)
+                    .font(Push.Typography.caption)
+                    .foregroundStyle(Push.Palette.flame)
+            }
+
+            Text(detail)
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .pushCard()
+        .onAppear {
+            // Only once: re-running on every redraw would throw away an
+            // adjustment the moment anything else on the screen changed.
+            guard !hasPrefilled else { return }
+            hasPrefilled = true
+            actualReps = counted
+        }
+        .sheet(item: $file) { file in
+            ShareRecording(url: file.url)
+        }
+    }
+
+    private var detail: String {
+        let size = "~\(recorder.approximateKilobytes) KB"
+        let base = "\(recorder.frameCount) frames, \(size). Joint positions only — no video, nothing that identifies you."
+        return recorder.isTruncated
+            ? base + " The set ran long, so the recording stops partway; say the count for what it caught, or discard it."
+            : base
+    }
+
+    private func export() {
+        do {
+            let name = PoseRecorder.suggestedName(reps: actualReps)
+            let url = try recorder.write(name: name, actualReps: actualReps,
+                                         counted: counted, note: note)
+            file = RecordingFile(url)
+        } catch {
+            self.error = "Could not save the recording: \(error.localizedDescription)"
+        }
+    }
+}
+
+private struct RecordingFile: Identifiable {
+    let id = UUID()
+    let url: URL
+    init(_ url: URL) { self.url = url }
+}
+
+private struct ShareRecording: UIViewControllerRepresentable {
+    let url: URL
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+    }
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
