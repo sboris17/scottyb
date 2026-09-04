@@ -180,11 +180,24 @@ struct OnboardingView: View {
             }
             .disabled(auth.isSigningIn)
 
-            if step != .welcome && step != lastStep {
-                Button("Skip") { withAnimation(.snappy) { step = lastStep } }
-                    .font(Push.Typography.caption)
-                    .foregroundStyle(Push.Palette.textSecondary)
+            HStack(spacing: 20) {
+                // Every step after the first was one-way. Getting a number
+                // wrong and being unable to go back and change it is how
+                // somebody ends up on a programme built for a different body -
+                // which is exactly what happened.
+                if step != .welcome {
+                    Button("Back") {
+                        withAnimation(.snappy) {
+                            step = Step(rawValue: step.rawValue - 1) ?? .welcome
+                        }
+                    }
+                }
+                if step != .welcome && step != lastStep {
+                    Button("Skip") { withAnimation(.snappy) { step = lastStep } }
+                }
             }
+            .font(Push.Typography.caption)
+            .foregroundStyle(Push.Palette.textSecondary)
         }
     }
 

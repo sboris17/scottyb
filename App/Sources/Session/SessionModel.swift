@@ -51,6 +51,11 @@ final class SessionModel {
     /// summary can explain itself once the phone is back in your hand.
     private(set) var failureDiagnostics: RepDiagnostics?
 
+    /// Left deliberately without banking anything, as opposed to finished.
+    /// The two need to end differently: finishing shows a summary, backing out
+    /// of a screen you opened by mistake should just close.
+    private(set) var wasCancelled = false
+
     /// Captures the set for replay when the recording switch is on.
     ///
     /// Held here rather than in the view because it has to see every frame,
@@ -171,6 +176,20 @@ final class SessionModel {
         // the camera path this is also the last cue before a silence that,
         // until now, was indistinguishable from the app not working.
         Feedback.shared.setBeginning(first + 1)
+    }
+
+    /// Leaves without recording anything.
+    ///
+    /// Only ever called when nothing is at stake - before a set starts, or
+    /// with no reps counted - or when the person has been asked and said to
+    /// discard. Reps that happened are never thrown away silently.
+    func cancel() {
+        restTimer?.invalidate()
+        restTimer = nil
+        proximity.stop()
+        onSessionEnded?()
+        wasCancelled = true
+        phase = .finished
     }
 
     /// How this session gets recorded. Proximity is a sensed mode, not a

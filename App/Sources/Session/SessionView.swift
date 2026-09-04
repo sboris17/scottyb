@@ -41,7 +41,8 @@ struct SessionContainerView: View {
 
             switch model.phase {
             case .framing:
-                FramingView(model: model, camera: camera, preview: previewHolder.view, error: cameraError) {
+                FramingView(model: model, camera: camera, preview: previewHolder.view,
+                            error: cameraError, onCancel: { model.cancel() }) {
                     model.begin(mode: .camera)
                 } onFloor: {
                     // The camera is pointless in floor mode and costs battery
@@ -69,6 +70,9 @@ struct SessionContainerView: View {
         .onChange(of: model.phase) { _, phase in
             if phase == .finished {
                 camera.stop()
+                // Backing out is not finishing. No record, no summary, no
+                // celebration for a screen somebody opened by mistake.
+                if model.wasCancelled { dismiss(); return }
                 let outcome = model.result()
                 store.record(outcome)
                 // The workout is already saved locally at this point. This is
@@ -133,12 +137,25 @@ private struct FramingView: View {
     let camera: PoseCameraController
     let preview: CameraPreview.PreviewView
     let error: String?
+    let onCancel: () -> Void
     let onReady: () -> Void
     let onFloor: () -> Void
     let onManual: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
+            // Nothing has started yet, so leaving needs no ceremony - but it
+            // does need to be possible. This screen had no way out at all.
+            HStack {
+                Button { onCancel() } label: {
+                    Image(systemName: "xmark")
+                        .font(.headline)
+                        .foregroundStyle(Push.Palette.textSecondary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+
             CameraPreview(session: camera.captureSession, view: preview)
                 .overlay { SkeletonOverlay(frame: model.lastFrame) }
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -340,23 +357,7 @@ private struct CountingView: View {
         .animation(.snappy, value: model.currentHint)
     }
 
-    private var header: some View {
-        HStack {
-            Button {
-                model.finish()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.headline)
-                    .foregroundStyle(Push.Palette.textSecondary)
-            }
-            Spacer()
-            Text("Set \(model.currentSetIndex + 1) of \(model.prescription.count)")
-                .font(Push.Typography.label)
-                .foregroundStyle(Push.Palette.textSecondary)
-            Spacer()
-            Text(model.mode == .camera ? "\u{1F4F7}" : "\u{270B}")
-        }
-    }
+    private var header: some View { SessionHeader(model: model) }
 
     /// Shown only once pose has been unusable for several seconds. Nagging
     /// about framing while somebody is mid-set is worse than just counting.
@@ -399,6 +400,7 @@ private struct RestView: View {
 
     var body: some View {
         VStack(spacing: 24) {
+            SessionHeader(model: model)
             Text("REST")
                 .font(Push.Typography.label)
                 .tracking(3)
@@ -455,5 +457,60 @@ private struct FloorModeHint: View {
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 24)
+    }
+}
+
+
+/// The bar at the top of every in-workout screen.
+///
+/// Shared so that leaving is possible from all of them. Rest had no exit at
+/// all: once a set ended you were held until the timer ran out or you started
+/// the next one, with no way back to the app.
+///
+/// The X is honest about what it does. It used to call `finish()`, which banks
+/// the workout and shows a summary - so a control that reads as "close" was
+/// quietly ending and recording a session. Now it only does that when there is
+/// something to save, and it asks first.
+private struct SessionHeader: View {
+    let model: SessionModel
+    @State private var confirmingExit = false
+
+    var body: some View {
+        HStack {
+            Button {
+                if model.totalReps > 0 {
+                    confirmingExit = true
+                } else {
+                    model.cancel()
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.headline)
+                    .foregroundStyle(Push.Palette.textSecondary)
+            }
+            Spacer()
+            Text("Set \(model.currentSetIndex + 1) of \(model.prescription.count)")
+                .font(Push.Typography.label)
+                .foregroundStyle(Push.Palette.textSecondary)
+            Spacer()
+            Text(symbol)
+        }
+        .confirmationDialog("End this workout?",
+                            isPresented: $confirmingExit,
+                            titleVisibility: .visible) {
+            // Reps that happened are never thrown away by accident, so saving
+            // is the default and discarding has to be chosen.
+            Button("Save \(model.totalReps) and finish") { model.finish() }
+            Button("Discard this workout", role: .destructive) { model.cancel() }
+            Button("Keep going", role: .cancel) {}
+        }
+    }
+
+    private var symbol: String {
+        switch model.mode {
+        case .camera: return "\u{1F4F7}"
+        case .proximity: return "\u{1F4F1}"
+        case .manual: return "\u{270B}"
+        }
     }
 }
