@@ -49,7 +49,7 @@ struct AppleSignInView: View {
                     .overlay {
                         if model.isSigningIn {
                             ZStack {
-                                RoundedRectangle(cornerRadius: Push.Metrics.cornerRadius,
+                                RoundedRectangle(cornerRadius: Push.Metrics.controlRadius,
                                                  style: .continuous)
                                     .fill(.ultraThinMaterial)
                                 ProgressView().tint(Push.Palette.accent)
@@ -97,6 +97,6 @@ struct AppleSignInView: View {
         }
         .signInWithAppleButtonStyle(.white)
         .frame(height: 50)
-        .clipShape(RoundedRectangle(cornerRadius: Push.Metrics.cornerRadius, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Push.Metrics.controlRadius, style: .continuous))
     }
 }

@@ -23,23 +23,38 @@ struct ProgramsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: Push.Metrics.gutter) {
+                VStack(spacing: 22) {
                     if let suggestion = misfit, let active = store.activeProgram {
                         misfitCard(active: active, suggestion: suggestion)
                     }
                     if let program = store.activeProgram, let enrollment = store.enrollment {
-                        activeCard(program: program, enrollment: enrollment)
-                    }
-                    ForEach(ProgramLibrary.all) { program in
-                        Button { selected = program } label: {
-                            programCard(program,
-                                        isActive: program.slug == store.enrollment?.programSlug,
-                                        isRecommended: program.slug == recommended?.slug)
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionHeader("Your program")
+                            activeCard(program: program, enrollment: enrollment)
                         }
-                        .buttonStyle(.plain)
+                    }
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionHeader("All programs", detail: "\(ProgramLibrary.all.count)")
+                        VStack(spacing: 0) {
+                            ForEach(Array(ProgramLibrary.all.enumerated()), id: \.element.id) { pair in
+                                if pair.offset > 0 {
+                                    Rectangle().fill(Push.Palette.stroke)
+                                        .frame(height: 1).padding(.leading, 18)
+                                }
+                                Button { selected = pair.element } label: {
+                                    programRow(pair.element,
+                                               isActive: pair.element.slug == store.enrollment?.programSlug,
+                                               isRecommended: pair.element.slug == recommended?.slug)
+                                }
+                                .buttonStyle(PushPressStyle())
+                            }
+                        }
+                        .pushCard(padding: 0)
                     }
                 }
-                .padding(Push.Metrics.gutter)
+                .padding(.horizontal, Push.Metrics.gutter)
+                .padding(.top, 4)
+                .padding(.bottom, 28)
             }
             .background(Push.Palette.background)
             .navigationTitle("Programs")
@@ -82,76 +97,79 @@ struct ProgramsView: View {
 
     /// Says the thing the app previously knew and never mentioned.
     private func misfitCard(active: Program, suggestion: Program) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(ProgramFit.evaluate(program: active, bestSet: store.records.bestSet) == .outgrown
-                 ? "YOU'VE OUTGROWN THIS"
-                 : "THIS ONE'S A STRETCH")
-                .font(Push.Typography.caption).tracking(2)
-                .foregroundStyle(Push.Palette.accent)
-            Text("Your best set is \(store.records.bestSet). \(active.title) tops out at \(active.peakSet).")
-                .font(Push.Typography.headline)
-                .foregroundStyle(Push.Palette.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("\(suggestion.title) fits what you can actually do.")
-                .font(Push.Typography.caption)
+        let outgrown = ProgramFit.evaluate(program: active, bestSet: store.records.bestSet) == .outgrown
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                SymbolBadge(outgrown ? "arrow.up.forward" : "exclamationmark.triangle.fill",
+                            diameter: 36,
+                            tint: outgrown ? Push.Palette.accent : Push.Palette.flame)
+                Text(outgrown ? "You've outgrown this one" : "This one's a stretch")
+                    .font(Push.Typography.title)
+                    .foregroundStyle(Push.Palette.textPrimary)
+            }
+            Text("Your best set is \(store.records.bestSet). \(active.title) tops out at \(active.peakSet). \(suggestion.title) fits what you can actually do.")
+                .font(Push.Typography.body)
                 .foregroundStyle(Push.Palette.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
             PrimaryButton("Switch to \(suggestion.title)") { selected = suggestion }
         }
         .pushCard()
     }
 
     private func activeCard(program: Program, enrollment: ProgramEnrollment) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("IN PROGRESS")
-                .font(Push.Typography.caption).tracking(2)
-                .foregroundStyle(Push.Palette.accent)
-            Text(program.title).font(Push.Typography.title)
-                .foregroundStyle(Push.Palette.textPrimary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                Text(program.title).font(Push.Typography.title)
+                    .foregroundStyle(Push.Palette.textPrimary)
+                Spacer(minLength: 8)
+                PushTag("In progress", systemImage: "circle.fill")
+            }
             ProgressView(value: Double(enrollment.currentDayIndex),
                          total: Double(max(program.dayCount, 1)))
                 .tint(Push.Palette.accent)
-            Text("Day \(min(enrollment.currentDayIndex + 1, program.dayCount)) of \(program.dayCount)")
-                .font(Push.Typography.caption)
-                .foregroundStyle(Push.Palette.textSecondary)
-            if enrollment.adaptationOffset != 0 {
-                // Visible on purpose: silent difficulty changes read as bugs.
-                Text(enrollment.adaptationOffset > 0
-                     ? "Adjusted up \u{2014} you've been beating the targets."
-                     : "Adjusted down \u{2014} keeping the sets finishable.")
+            HStack {
+                Text("Day \(min(enrollment.currentDayIndex + 1, program.dayCount)) of \(program.dayCount)")
                     .font(Push.Typography.caption)
-                    .foregroundStyle(Push.Palette.textSecondary)
+                    .foregroundStyle(Push.Palette.textTertiary)
+                Spacer()
+                if enrollment.adaptationOffset != 0 {
+                    // Visible on purpose: silent difficulty changes read as bugs.
+                    Text(enrollment.adaptationOffset > 0 ? "Adjusted up" : "Adjusted down")
+                        .font(Push.Typography.caption)
+                        .foregroundStyle(Push.Palette.textTertiary)
+                }
             }
         }
         .pushCard()
     }
 
-    private func programCard(_ program: Program, isActive: Bool, isRecommended: Bool) -> some View {
+    private func programRow(_ program: Program, isActive: Bool, isRecommended: Bool) -> some View {
         HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                if isRecommended && !isActive {
-                    Text("RECOMMENDED FOR YOU")
-                        .font(Push.Typography.caption).tracking(1.5)
-                        .foregroundStyle(Push.Palette.accent)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 8) {
+                    Text(program.title).font(Push.Typography.headline)
+                        .foregroundStyle(Push.Palette.textPrimary)
+                    if isRecommended && !isActive {
+                        PushTag("Recommended", systemImage: "sparkles")
+                    }
                 }
-                Text(program.title).font(Push.Typography.headline)
-                    .foregroundStyle(Push.Palette.textPrimary)
                 Text(program.summary).font(Push.Typography.caption)
                     .foregroundStyle(Push.Palette.textSecondary)
                     .multilineTextAlignment(.leading)
                 // The two numbers that decide whether a programme is for you,
                 // rather than making you open it to find out.
                 Text("\(program.dayCount) days · builds to \(program.peakSet) in a set")
-                    .font(Push.Typography.caption)
-                    .foregroundStyle(Push.Palette.textSecondary.opacity(0.7))
+                    .font(Push.Typography.micro)
+                    .foregroundStyle(Push.Palette.textTertiary)
             }
-            Spacer()
-            if isActive {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(Push.Palette.accent)
-            } else {
-                Image(systemName: "chevron.right").foregroundStyle(Push.Palette.textSecondary)
-            }
+            Spacer(minLength: 0)
+            Image(systemName: isActive ? "checkmark.circle.fill" : "chevron.right")
+                .font(.system(size: isActive ? 17 : 13, weight: .semibold))
+                .foregroundStyle(isActive ? Push.Palette.accent : Push.Palette.textTertiary)
         }
-        .pushCard()
+        .padding(.horizontal, 18)
+        .padding(.vertical, 15)
+        .contentShape(Rectangle())
     }
 }
 
@@ -164,48 +182,61 @@ struct ProgramDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: Push.Metrics.gutter) {
+                VStack(alignment: .leading, spacing: 20) {
                     Text(program.summary)
                         .font(Push.Typography.body)
                         .foregroundStyle(Push.Palette.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    MetricStrip([
+                        .init("\(program.dayCount)", "Days"),
+                        .init("\(program.peakSet)", "Peak set"),
+                        .init("\(program.days.filter(\.isRecoveryDay).count)", "Rest days"),
+                    ])
+                    .pushCard()
 
                     if fit != .good {
-                        Text(fit == .outgrown
-                             ? "You can already do this program's final target in one set."
-                             : "Day one of this asks for more than your best set so far.")
-                            .font(Push.Typography.caption)
-                            .foregroundStyle(Push.Palette.flame)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    HStack(spacing: 10) {
-                        StatChip(emoji: "\u{1F4C5}", value: "\(program.dayCount)", caption: "Days")
-                        StatChip(emoji: "\u{1F3AF}", value: "\(program.peakSet)", caption: "Peak set")
-                        StatChip(emoji: "\u{1F634}",
-                                 value: "\(program.days.filter(\.isRecoveryDay).count)",
-                                 caption: "Rest days")
-                    }
-
-                    Text("The first week").font(Push.Typography.label)
-                        .foregroundStyle(Push.Palette.textSecondary)
-
-                    ForEach(program.days.prefix(7)) { day in
-                        HStack {
-                            Text("Day \(day.dayIndex + 1)")
+                        HStack(spacing: 10) {
+                            Image(systemName: "info.circle.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text(fit == .outgrown
+                                 ? "You can already do this program's final target in one set."
+                                 : "Day one of this asks for more than your best set so far.")
                                 .font(Push.Typography.caption)
-                                .foregroundStyle(Push.Palette.textSecondary)
-                                .frame(width: 60, alignment: .leading)
-                            Text(day.summary)
-                                .font(Push.Typography.headline)
-                                .foregroundStyle(day.isRecoveryDay ? Push.Palette.textSecondary : Push.Palette.textPrimary)
-                            Spacer()
-                            if !day.isRecoveryDay {
-                                Text("\(day.totalReps)")
-                                    .font(Push.Typography.caption)
-                                    .foregroundStyle(Push.Palette.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                        .foregroundStyle(Push.Palette.flame)
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionHeader("The first week")
+                        VStack(spacing: 0) {
+                            ForEach(Array(program.days.prefix(7).enumerated()), id: \.element.id) { pair in
+                                if pair.offset > 0 {
+                                    Rectangle().fill(Push.Palette.stroke)
+                                        .frame(height: 1).padding(.leading, 16)
+                                }
+                                HStack {
+                                    Text("Day \(pair.element.dayIndex + 1)")
+                                        .font(Push.Typography.caption)
+                                        .foregroundStyle(Push.Palette.textTertiary)
+                                        .frame(width: 56, alignment: .leading)
+                                    Text(pair.element.summary)
+                                        .font(Push.Typography.body)
+                                        .foregroundStyle(pair.element.isRecoveryDay ? Push.Palette.textTertiary : Push.Palette.textPrimary)
+                                    Spacer()
+                                    if !pair.element.isRecoveryDay {
+                                        Text("\(pair.element.totalReps)")
+                                            .font(Push.Typography.stat(15))
+                                            .foregroundStyle(Push.Palette.textSecondary)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
                             }
                         }
-                        .padding(.vertical, 6)
+                        .pushCard(padding: 0)
                     }
 
                     PrimaryButton("Start this program", action: onStart)

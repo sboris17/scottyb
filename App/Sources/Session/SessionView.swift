@@ -149,16 +149,25 @@ private struct FramingView: View {
             HStack {
                 Button { onCancel() } label: {
                     Image(systemName: "xmark")
-                        .font(.headline)
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Push.Palette.textSecondary)
                 }
                 Spacer()
+                Text("Set up")
+                    .font(Push.Typography.label)
+                    .foregroundStyle(Push.Palette.textSecondary)
+                Spacer()
+                Image(systemName: "xmark").opacity(0)
             }
             .padding(.horizontal)
 
             CameraPreview(session: camera.captureSession, view: preview)
                 .overlay { SkeletonOverlay(frame: model.lastFrame) }
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(Push.Palette.stroke, lineWidth: 1)
+                }
                 .overlay(alignment: .topTrailing) {
                     Button {
                         camera.flipCamera()
@@ -183,13 +192,13 @@ private struct FramingView: View {
                 }
                 .padding(.horizontal)
 
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Text("Prop your phone up to your side")
                     .font(Push.Typography.title)
                     .foregroundStyle(Push.Palette.textPrimary)
-                Text("Green lines mean it can see you. Tap the camera button to switch front/back.")
-                    .font(Push.Typography.body)
-                    .foregroundStyle(Push.Palette.textSecondary)
+                Text("Green lines mean it can see you.")
+                    .font(Push.Typography.caption)
+                    .foregroundStyle(Push.Palette.textTertiary)
                     .multilineTextAlignment(.center)
             }
 
@@ -200,17 +209,17 @@ private struct FramingView: View {
                     .multilineTextAlignment(.center)
             }
 
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 PrimaryButton(model.framingIssue == nil ? "I'm ready" : "Start anyway", action: onReady)
                 // Offered at the same level as the camera rather than hidden
                 // as a fallback. For most people, most of the time, it is
                 // simply the better method: nothing to frame, nothing to light,
                 // and the screen ends up under your face instead of across the
                 // room.
-                SecondaryButton("Use floor mode instead", action: onFloor)
+                SecondaryButton("Use floor mode instead", systemImage: "iphone", action: onFloor)
                 // Never a dead end: manual is always one tap away, never
                 // buried behind a menu.
-                SecondaryButton("Count manually instead", action: onManual)
+                QuietButton("Count manually instead", action: onManual)
             }
             .padding(.horizontal)
         }
@@ -273,14 +282,14 @@ private struct CountingView: View {
                 .onTapGesture { model.addManualRep() }
 
             if let target = model.currentTarget {
-                Text("Goal: \(target)")
-                    .font(Push.Typography.headline)
-                    .foregroundStyle(Push.Palette.textSecondary)
-                    .padding(.top, 4)
+                Text("of \(target) this set")
+                    .font(Push.Typography.label)
+                    .foregroundStyle(Push.Palette.textTertiary)
+                    .padding(.top, 2)
                 ProgressView(value: model.setProgress)
                     .tint(Push.Palette.accent)
-                    .frame(maxWidth: 220)
-                    .padding(.top, 12)
+                    .frame(maxWidth: 200)
+                    .padding(.top, 14)
             }
 
             if let hint = model.currentHint {
@@ -302,7 +311,11 @@ private struct CountingView: View {
                 CameraPreview(session: camera.captureSession, view: preview)
                     .overlay { SkeletonOverlay(frame: model.lastFrame) }
                     .frame(height: 150)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .strokeBorder(Push.Palette.stroke, lineWidth: 1)
+                    }
                     .overlay(alignment: .topTrailing) {
                         Button { camera.flipCamera() } label: {
                             Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
@@ -366,7 +379,7 @@ private struct CountingView: View {
             Text("Can't see you clearly")
                 .font(Push.Typography.caption)
                 .foregroundStyle(Push.Palette.textSecondary)
-            SecondaryButton("Switch to tapping") { model.switchToManual() }
+            SecondaryButton("Switch to tapping", systemImage: "hand.tap.fill") { model.switchToManual() }
         }
         .padding(.bottom, 12)
     }
@@ -374,9 +387,9 @@ private struct CountingView: View {
     private var controls: some View {
         VStack(spacing: 10) {
             if model.mode == .manual {
-                HStack(spacing: 12) {
-                    SecondaryButton("\u{2212} 1") { model.removeManualRep() }
-                    PrimaryButton("+ 1") { model.addManualRep() }
+                HStack(spacing: 10) {
+                    SecondaryButton("Remove one", systemImage: "minus") { model.removeManualRep() }
+                    PrimaryButton("Add one", systemImage: "plus") { model.addManualRep() }
                 }
             }
             SecondaryButton(model.isLastSet ? "Finish workout" : "Done with this set") {
@@ -401,11 +414,10 @@ private struct RestView: View {
     var body: some View {
         VStack(spacing: 24) {
             SessionHeader(model: model)
-            Text("REST")
-                .font(Push.Typography.label)
-                .tracking(3)
-                .foregroundStyle(Push.Palette.textSecondary)
 
+            Spacer()
+
+            PushTag("Rest", systemImage: "pause.fill")
             HeroCount(Int(model.restRemaining.rounded()), label: "seconds")
 
             if let nextTarget {
@@ -415,11 +427,12 @@ private struct RestView: View {
             }
 
             Text("Last set: \(model.completedSets.last ?? 0)")
-                .font(Push.Typography.body)
-                .foregroundStyle(Push.Palette.textSecondary)
+                .font(Push.Typography.caption)
+                .foregroundStyle(Push.Palette.textTertiary)
 
-            PrimaryButton("Skip rest") { model.skipRest() }
-                .padding(.horizontal)
+            Spacer()
+
+            PrimaryButton("Skip rest", systemImage: "forward.fill") { model.skipRest() }
         }
         .padding()
     }
@@ -445,15 +458,13 @@ private struct FloorModeHint: View {
                     .font(Push.Typography.caption)
                     .foregroundStyle(Push.Palette.textSecondary)
             }
-            Text("Phone flat on the floor, screen up, top edge under your chest. Lower until you nearly touch it.")
+            // Said up front because the dark screen looks like a fault
+            // otherwise, and a person who thinks the app crashed mid-set stops
+            // the set. Kept to one line: three stacked paragraphs of grey small
+            // print is not instruction, it is wallpaper.
+            Text("Phone flat, screen up, under your chest. It goes dark each time you come down \u{2014} that is the sensor working.")
                 .font(Push.Typography.caption)
-                .foregroundStyle(Push.Palette.textSecondary)
-                .multilineTextAlignment(.center)
-            // Said up front because it looks like a fault otherwise, and a
-            // person who thinks the app crashed mid-set stops the set.
-            Text("The screen goes dark each time you come down. That is the sensor working.")
-                .font(Push.Typography.caption)
-                .foregroundStyle(Push.Palette.textSecondary.opacity(0.7))
+                .foregroundStyle(Push.Palette.textTertiary)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 24)
@@ -493,7 +504,10 @@ private struct SessionHeader: View {
                 .font(Push.Typography.label)
                 .foregroundStyle(Push.Palette.textSecondary)
             Spacer()
-            Text(symbol)
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Push.Palette.textTertiary)
+                .accessibilityLabel(modeName)
         }
         .confirmationDialog("End this workout?",
                             isPresented: $confirmingExit,
@@ -506,11 +520,25 @@ private struct SessionHeader: View {
         }
     }
 
+    /// Which method is counting, said with a symbol rather than an emoji.
+    ///
+    /// An emoji here was a picture from somebody else's icon set sitting in the
+    /// corner of the one screen this app is about, at whatever weight and
+    /// colour that vendor felt like. These inherit the tint and the type size
+    /// like everything else on the bar.
     private var symbol: String {
         switch model.mode {
-        case .camera: return "\u{1F4F7}"
-        case .proximity: return "\u{1F4F1}"
-        case .manual: return "\u{270B}"
+        case .camera: return "camera.fill"
+        case .proximity: return "iphone"
+        case .manual: return "hand.tap.fill"
+        }
+    }
+
+    private var modeName: String {
+        switch model.mode {
+        case .camera: return "Camera counting"
+        case .proximity: return "Floor mode"
+        case .manual: return "Counting by tapping"
         }
     }
 }

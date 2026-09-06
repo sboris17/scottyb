@@ -160,6 +160,26 @@ Large numbers, smooth animations, minimal screens, satisfying progress rings,
 strong typography, haptic feedback, occasional visual celebrations. The push-up
 count itself is usually the hero of the screen.
 
+### House rules
+
+Written down after the first build came back looking generated rather than
+designed. Each of these was a default nobody chose, and together they were a
+house style.
+
+- **The default San Francisco face for words.** The rounded face was on every
+  string in the app; at display sizes it reads as a children's game.
+- **Numbers are the only thing allowed to shout.** Big, tightly tracked,
+  monospaced digits, so a live count does not reflow as it ticks past 9.
+- **SF Symbols, never emoji.** Emoji come from another vendor's illustration
+  set, ignore the tint, ignore Dynamic Type and get redrawn out from under you.
+- **Sentence case.** No ALL-CAPS LETTER-SPACED strap lines stamped on top of
+  cards. A small tag or a plain section heading says the same thing.
+- **Hierarchy from weight and space, not boxes.** A card means "these belong
+  together", so a screen made only of cards means nothing. The one thing a
+  screen exists to say sits on the background.
+- **One accent, spent carefully.** It marks the action to take and progress
+  made. Not headings, not labels, not decoration.
+
 ## MVP
 
 **Version 1**

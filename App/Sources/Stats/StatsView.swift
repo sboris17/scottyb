@@ -19,26 +19,27 @@ struct StatsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: Push.Metrics.gutter) {
-                    lifetimeCard
-                    momentumCard
-                    chartCard
-                    weeklyCard
-                    recordsCard
+                VStack(spacing: 22) {
+                    lifetimeHero
+                    momentumBlock
+                    chartBlock
+                    weeklyBlock
+                    recordsBlock
                     AchievementsGrid(unlocked: store.unlockedAchievements)
                 }
-                .padding(Push.Metrics.gutter)
+                .padding(.horizontal, Push.Metrics.gutter)
+                .padding(.bottom, 28)
             }
             .background(Push.Palette.background)
             .navigationTitle("Stats")
         }
     }
 
-    private var lifetimeCard: some View {
-        VStack(spacing: 6) {
-            HeroCount(store.records.lifetimeTotal, label: "lifetime push-ups")
-        }
-        .pushCard()
+    /// On the background, not in a card. It is the headline of the screen.
+    private var lifetimeHero: some View {
+        HeroCount(store.records.lifetimeTotal, label: "push-ups, all time")
+            .frame(maxWidth: .infinity)
+            .padding(.top, 4)
     }
 
     // MARK: - Momentum
@@ -60,7 +61,7 @@ struct StatsView: View {
     /// Deliberately this week against last week rather than a rolling average.
     /// A rolling average is smoother and means less - nobody has ever felt
     /// anything about their 28-day mean.
-    private var momentumCard: some View {
+    private var momentumBlock: some View {
         let thisWeek = total(daysAgo: 0..<7)
         let lastWeek = total(daysAgo: 7..<14)
         let delta = thisWeek - lastWeek
@@ -68,22 +69,35 @@ struct StatsView: View {
         let average = sessions > 0 ? store.records.lifetimeTotal / sessions : 0
 
         return VStack(alignment: .leading, spacing: 12) {
-            Text("Momentum").font(Push.Typography.label)
-                .foregroundStyle(Push.Palette.textSecondary)
-            HStack(spacing: 10) {
-                StatChip(emoji: "\u{1F4C8}", value: "\(thisWeek)", caption: "This week")
-                StatChip(emoji: "\u{1F4C6}", value: "\(lastWeek)", caption: "Last week")
-                StatChip(emoji: "\u{1F501}", value: "\(sessions)", caption: "Sessions")
-                StatChip(emoji: "\u{2696}\u{FE0F}", value: "\(average)", caption: "Per session")
-            }
-            if lastWeek > 0 || thisWeek > 0 {
-                Text(momentumSentence(delta: delta, lastWeek: lastWeek))
-                    .font(Push.Typography.caption)
+            SectionHeader("Momentum")
+            VStack(spacing: 14) {
+                MetricStrip([
+                    .init("\(thisWeek)", "This week"),
+                    .init("\(lastWeek)", "Last week"),
+                    .init("\(sessions)", "Sessions"),
+                    .init("\(average)", "Per session"),
+                ], valueSize: 21)
+
+                if lastWeek > 0 || thisWeek > 0 {
+                    HStack(spacing: 8) {
+                        Image(systemName: deltaSymbol(delta: delta, lastWeek: lastWeek))
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(momentumSentence(delta: delta, lastWeek: lastWeek))
+                            .font(Push.Typography.caption)
+                        Spacer(minLength: 0)
+                    }
                     .foregroundStyle(delta < 0 ? Push.Palette.textSecondary : Push.Palette.accent)
-                    .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            .pushCard()
         }
-        .pushCard()
+    }
+
+    private func deltaSymbol(delta: Int, lastWeek: Int) -> String {
+        if lastWeek == 0 { return "clock" }
+        if delta > 0 { return "arrow.up.right" }
+        if delta == 0 { return "equal" }
+        return "arrow.down.right"
     }
 
     /// Down weeks are stated plainly and without scolding. A training app that
@@ -95,35 +109,11 @@ struct StatsView: View {
         return "Down \(abs(delta)) on last week."
     }
 
-    /// Twelve weeks, because a fortnight of bars cannot show a trend and this
-    /// is the only place in the app that tries to.
-    private var weeklyCard: some View {
-        let weeks: [(start: Date, total: Int)] = (0..<12).reversed().compactMap { offset in
-            guard let start = calendar.date(byAdding: .day, value: -7 * offset,
-                                            to: calendar.startOfDay(for: Date())) else { return nil }
-            return (start, total(daysAgo: (offset * 7)..<((offset + 1) * 7)))
-        }
-        return VStack(alignment: .leading, spacing: 12) {
-            Text("Last 12 weeks").font(Push.Typography.label)
-                .foregroundStyle(Push.Palette.textSecondary)
-            Chart(weeks, id: \.start) { week in
-                BarMark(x: .value("Week", week.start, unit: .weekOfYear),
-                        y: .value("Reps", week.total))
-                    .foregroundStyle(Push.Palette.accent.opacity(0.85))
-                    .cornerRadius(4)
-            }
-            .chartYAxis { AxisMarks(position: .leading) }
-            .chartXAxis { AxisMarks(values: .stride(by: .month)) }
-            .frame(height: 140)
-            .accessibilityLabel("Push-ups per week for the last twelve weeks")
-        }
-        .pushCard()
-    }
+    // MARK: - Charts
 
-    private var chartCard: some View {
+    private var chartBlock: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Last 14 days").font(Push.Typography.label)
-                .foregroundStyle(Push.Palette.textSecondary)
+            SectionHeader("Last 14 days", detail: store.profile.dailyGoal > 0 ? "goal \(store.profile.dailyGoal)" : nil)
             Chart {
                 ForEach(lastFourteenDays, id: \.day) { record in
                     BarMark(
@@ -131,40 +121,73 @@ struct StatsView: View {
                         y: .value("Reps", record.totalReps)
                     )
                     .foregroundStyle(record.qualifies ? Push.Palette.accent : Push.Palette.track)
-                    .cornerRadius(4)
+                    .cornerRadius(3)
                 }
                 // Bars without the line they are judged against make a good day
                 // and a bad day look the same.
                 if store.profile.dailyGoal > 0 {
                     RuleMark(y: .value("Goal", store.profile.dailyGoal))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                        .foregroundStyle(Push.Palette.textSecondary)
-                        .annotation(position: .top, alignment: .leading) {
-                            Text("goal \(store.profile.dailyGoal)")
-                                .font(Push.Typography.caption)
-                                .foregroundStyle(Push.Palette.textSecondary)
-                        }
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                        .foregroundStyle(Push.Palette.textTertiary)
                 }
             }
             .chartYAxis { AxisMarks(position: .leading) }
             .chartXAxis { AxisMarks(values: .stride(by: .day, count: 3)) }
-            .frame(height: 160)
+            .frame(height: 150)
             .accessibilityLabel("Daily push-ups for the last fourteen days")
+            .pushCard()
         }
-        .pushCard()
     }
 
-    private var recordsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Records").font(Push.Typography.label)
-                .foregroundStyle(Push.Palette.textSecondary)
-            row("Best set", store.records.bestSet)
-            row("Best day", store.records.bestDay)
-            row("Best week", store.records.bestWeek)
-            row("Best month", store.records.bestMonth)
-            row("Longest streak", store.records.longestStreak, suffix: " days")
+    /// Twelve weeks, because a fortnight of bars cannot show a trend and this
+    /// is the only place in the app that tries to.
+    private var weeklyBlock: some View {
+        let weeks: [(start: Date, total: Int)] = (0..<12).reversed().compactMap { offset in
+            guard let start = calendar.date(byAdding: .day, value: -7 * offset,
+                                            to: calendar.startOfDay(for: Date())) else { return nil }
+            return (start, total(daysAgo: (offset * 7)..<((offset + 1) * 7)))
         }
-        .pushCard()
+        return VStack(alignment: .leading, spacing: 12) {
+            SectionHeader("Last 12 weeks")
+            Chart(weeks, id: \.start) { week in
+                BarMark(x: .value("Week", week.start, unit: .weekOfYear),
+                        y: .value("Reps", week.total))
+                    .foregroundStyle(Push.Palette.accent.opacity(0.8))
+                    .cornerRadius(3)
+            }
+            .chartYAxis { AxisMarks(position: .leading) }
+            .chartXAxis { AxisMarks(values: .stride(by: .month)) }
+            .frame(height: 130)
+            .accessibilityLabel("Push-ups per week for the last twelve weeks")
+            .pushCard()
+        }
+    }
+
+    // MARK: - Records
+
+    private var recordsBlock: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader("Records")
+            VStack(spacing: 0) {
+                row("Best set", store.records.bestSet)
+                divider
+                row("Best day", store.records.bestDay)
+                divider
+                row("Best week", store.records.bestWeek)
+                divider
+                row("Best month", store.records.bestMonth)
+                divider
+                row("Longest streak", store.records.longestStreak, suffix: " days")
+            }
+            .pushCard(padding: 0)
+        }
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Push.Palette.stroke)
+            .frame(height: 1)
+            .padding(.leading, 16)
     }
 
     private func row(_ title: String, _ value: Int, suffix: String = "") -> some View {
@@ -173,43 +196,51 @@ struct StatsView: View {
                 .foregroundStyle(Push.Palette.textSecondary)
             Spacer()
             Text("\(value)\(suffix)")
-                .font(Push.Typography.stat(18))
+                .font(Push.Typography.stat(17))
                 .foregroundStyle(Push.Palette.textPrimary)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 13)
     }
 }
 
 struct AchievementsGrid: View {
     let unlocked: Set<String>
 
-    private let columns = [GridItem(.adaptive(minimum: 96), spacing: 10)]
+    private let columns = [GridItem(.adaptive(minimum: 100), spacing: 10)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Achievements").font(Push.Typography.label)
-                .foregroundStyle(Push.Palette.textSecondary)
+            SectionHeader("Achievements", detail: "\(unlocked.count) of \(AchievementCatalog.all.count)")
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(AchievementCatalog.all) { achievement in
                     let isUnlocked = unlocked.contains(achievement.slug)
-                    VStack(spacing: 6) {
-                        Text(achievement.emoji)
-                            .font(.system(size: 26))
-                            .grayscale(isUnlocked ? 0 : 1)
-                            .opacity(isUnlocked ? 1 : 0.35)
+                    VStack(spacing: 8) {
+                        // A locked badge is dimmed and outlined rather than
+                        // greyscaled: greyscale on an emoji only ever meant
+                        // "this picture is broken".
+                        Image(systemName: achievement.symbol)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(isUnlocked ? Push.Palette.accent : Push.Palette.textTertiary)
+                            .frame(width: 38, height: 38)
+                            .background(isUnlocked ? Push.Palette.accentSoft : Color.clear, in: Circle())
+                            .overlay {
+                                if !isUnlocked {
+                                    Circle().strokeBorder(Push.Palette.stroke, lineWidth: 1)
+                                }
+                            }
                         Text(achievement.title)
-                            .font(Push.Typography.caption)
+                            .font(Push.Typography.micro)
                             .multilineTextAlignment(.center)
-                            .foregroundStyle(isUnlocked ? Push.Palette.textPrimary : Push.Palette.textSecondary)
+                            .foregroundStyle(isUnlocked ? Push.Palette.textPrimary : Push.Palette.textTertiary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Push.Palette.surfaceRaised)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.vertical, 14)
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("\(achievement.title), \(isUnlocked ? "unlocked" : "locked")")
                 }
             }
+            .pushCard(padding: 6)
         }
-        .pushCard()
     }
 }

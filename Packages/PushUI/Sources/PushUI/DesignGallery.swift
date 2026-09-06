@@ -11,31 +11,46 @@ struct DesignGallery: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Push.Metrics.gutter) {
+            VStack(alignment: .leading, spacing: 22) {
                 ZStack {
-                    ProgressRing(progress: 0.62, lineWidth: 16)
-                        .frame(width: 200, height: 200)
+                    ProgressRing(progress: 0.62, lineWidth: 12)
+                        .frame(width: 190, height: 190)
                     HeroCount(count, label: "push-ups")
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.top, 20)
 
-                HStack(spacing: 10) {
-                    StatChip(emoji: "\u{1F525}", value: "12", caption: "Day streak")
-                    StatChip(emoji: "\u{1F3C6}", value: "38", caption: "Best set")
-                    StatChip(emoji: "\u{1F4AA}", value: "428", caption: "This week")
+                MetricStrip([
+                    .init("12", "Day streak"),
+                    .init("38", "Best set"),
+                    .init("428", "This week"),
+                ])
+                .pushCard()
+
+                VStack(spacing: 10) {
+                    PrimaryButton("Start", systemImage: "play.fill") { count += 1 }
+                    SecondaryButton("Floor mode", systemImage: "iphone") { count = max(0, count - 1) }
+                    QuietButton("Just count, no plan") { count = 0 }
                 }
 
-                PrimaryButton("START", systemImage: "play.fill") { count += 1 }
-                SecondaryButton("Just Push") { count = max(0, count - 1) }
+                HStack(spacing: 8) {
+                    PushTag("In progress", systemImage: "circle.fill")
+                    PushTag("Recommended", systemImage: "sparkles")
+                    PushTag("Stretch", systemImage: "exclamationmark", tint: Push.Palette.flame)
+                }
 
-                CelebrationBadge(emoji: "\u{26A1}", title: "New personal record")
+                CelebrationBadge(systemImage: "bolt.fill", title: "New personal record. 38 in one set.")
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Card").font(Push.Typography.title)
-                        .foregroundStyle(Push.Palette.textPrimary)
-                    Text("Large numbers, quiet chrome, one loud accent.")
+                    SectionHeader("Card", detail: "grouping")
+                    Text("Large numbers, quiet chrome, one accent spent carefully.")
                         .font(Push.Typography.body)
                         .foregroundStyle(Push.Palette.textSecondary)
+                    HStack(spacing: 12) {
+                        SymbolBadge("flame.fill")
+                        SymbolBadge("trophy.fill", diameter: 36)
+                        SymbolBadge("figure.strengthtraining.traditional", diameter: 30)
+                    }
                 }
                 .pushCard()
             }

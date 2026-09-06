@@ -59,10 +59,10 @@ struct OnboardingView: View {
     }
 
     private var welcome: some View {
-        VStack(spacing: 14) {
-            Text("\u{1F4AA}").font(.system(size: 64))
+        VStack(spacing: 16) {
+            SymbolBadge("figure.strengthtraining.traditional", diameter: 72)
             Text("One exercise.\nEvery day.")
-                .font(Push.Typography.hero(40))
+                .font(Push.Typography.display(38))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Push.Palette.textPrimary)
             Text("Prop your phone up and it counts your push-ups for you.")
@@ -75,7 +75,7 @@ struct OnboardingView: View {
     private var abilityStep: some View {
         VStack(spacing: 20) {
             Text("How many push-ups can you do right now?")
-                .font(Push.Typography.title)
+                .font(Push.Typography.display(24))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Push.Palette.textPrimary)
             HeroCount(maxReps, label: "in one set")
@@ -90,7 +90,7 @@ struct OnboardingView: View {
     private var goalStep: some View {
         VStack(spacing: 16) {
             Text("What are you after?")
-                .font(Push.Typography.title)
+                .font(Push.Typography.display(24))
                 .foregroundStyle(Push.Palette.textPrimary)
             Button { wantsHabit = false } label: {
                 choice(title: "Get stronger", detail: "Build toward a bigger set.", selected: !wantsHabit)
@@ -120,16 +120,17 @@ struct OnboardingView: View {
     private var summaryStep: some View {
         VStack(spacing: 16) {
             Text("Here's your plan")
-                .font(Push.Typography.title)
+                .font(Push.Typography.display(24))
                 .foregroundStyle(Push.Palette.textPrimary)
             VStack(spacing: 10) {
-                Text(recommended.title).font(Push.Typography.hero(36))
+                Text(recommended.title).font(Push.Typography.display(28))
                     .foregroundStyle(Push.Palette.accent)
+                    .multilineTextAlignment(.center)
                 Text(recommended.summary)
                     .font(Push.Typography.body)
                     .foregroundStyle(Push.Palette.textSecondary)
                     .multilineTextAlignment(.center)
-                Divider()
+                Rectangle().fill(Push.Palette.stroke).frame(height: 1)
                 Text("Daily goal: \(dailyGoal) push-ups")
                     .font(Push.Typography.headline)
                     .foregroundStyle(Push.Palette.textPrimary)
@@ -150,9 +151,9 @@ struct OnboardingView: View {
     /// and skipping is a plain button rather than fine print.
     private var accountStep: some View {
         VStack(spacing: 16) {
-            Text("\u{1F511}").font(.system(size: 52))
+            SymbolBadge("icloud.fill", diameter: 60)
             Text("Keep your progress")
-                .font(Push.Typography.title)
+                .font(Push.Typography.display(24))
                 .foregroundStyle(Push.Palette.textPrimary)
             Text("Sign in and your streak and history survive a new phone. Everything works without it \u{2014} workouts are always saved here first.")
                 .font(Push.Typography.body)
@@ -198,6 +199,7 @@ struct OnboardingView: View {
             }
             .font(Push.Typography.caption)
             .foregroundStyle(Push.Palette.textSecondary)
+            .frame(height: 20)
         }
     }
 

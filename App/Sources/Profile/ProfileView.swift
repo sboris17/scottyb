@@ -104,6 +104,8 @@ struct ProfileView: View {
                     Text("Overlays what the counter is seeing during a set \u{2014} angles, thresholds, and which check rejected a rep.\n\nRecording saves where your joints were, so a set can be replayed against the counter afterwards instead of guessed at. No video and nothing that identifies you: twelve coordinates a frame, and the summary asks what you really did so the clip means something.")
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Push.Palette.background)
             .navigationTitle("Profile")
             .onAppear {
                 goalDraft = store.profile.dailyGoal
@@ -157,35 +159,45 @@ struct ProfileView: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Push.Palette.accent.opacity(0.18))
-                    .frame(width: 76, height: 76)
-                Text(initials)
-                    .font(Push.Typography.stat(28))
-                    .foregroundStyle(Push.Palette.accent)
+                    .fill(Push.Palette.accentSoft)
+                    .frame(width: 72, height: 72)
+                if let initials {
+                    Text(initials)
+                        .font(Push.Typography.stat(26))
+                        .foregroundStyle(Push.Palette.accent)
+                } else {
+                    Image(systemName: "figure.strengthtraining.traditional")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundStyle(Push.Palette.accent)
+                }
             }
             Text(store.profile.displayName.isEmpty ? "Push-up in progress" : store.profile.displayName)
-                .font(Push.Typography.title)
+                .font(Push.Typography.display(22))
                 .foregroundStyle(Push.Palette.textPrimary)
             Text(memberSince)
                 .font(Push.Typography.caption)
-                .foregroundStyle(Push.Palette.textSecondary)
+                .foregroundStyle(Push.Palette.textTertiary)
 
-            HStack(spacing: 10) {
-                StatChip(emoji: "\u{1F4AA}", value: "\(store.records.lifetimeTotal)", caption: "Lifetime")
-                StatChip(emoji: "\u{1F525}", value: "\(store.currentStreak)", caption: "Streak")
-                StatChip(emoji: "\u{1F3C6}", value: "\(store.records.bestSet)", caption: "Best set")
-            }
-            .padding(.top, 4)
+            MetricStrip([
+                .init("\(store.records.lifetimeTotal)", "Lifetime"),
+                .init("\(store.currentStreak)", "Streak"),
+                .init("\(store.records.bestSet)", "Best set"),
+            ])
+            .pushCard()
+            .padding(.horizontal, 16)
+            .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
     }
 
-    private var initials: String {
+    /// Nil when there is no name yet, so the badge falls back to a symbol
+    /// rather than to an emoji standing in for a person.
+    private var initials: String? {
         let parts = store.profile.displayName
             .split(separator: " ")
             .compactMap(\.first)
             .prefix(2)
-        return parts.isEmpty ? "\u{1F4AA}" : String(parts).uppercased()
+        return parts.isEmpty ? nil : String(parts).uppercased()
     }
 
     private var memberSince: String {

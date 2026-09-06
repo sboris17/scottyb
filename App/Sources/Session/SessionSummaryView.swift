@@ -21,42 +21,44 @@ struct SessionSummaryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Push.Metrics.gutter) {
+            VStack(spacing: 20) {
                 if let recorder, !recorder.isEmpty {
                     RecordingPanel(recorder: recorder, counted: result.totalReps)
                 }
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     HeroCount(result.totalReps, label: "push-ups")
                     Text(result.setResults.filter { $0.completedReps > 0 }
                         .map { "\($0.completedReps)" }.joined(separator: " · "))
-                        .font(Push.Typography.headline)
-                        .foregroundStyle(Push.Palette.textSecondary)
+                        .font(Push.Typography.caption)
+                        .foregroundStyle(Push.Palette.textTertiary)
                 }
-                .padding(.top, 30)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 24)
 
-                HStack(spacing: 10) {
-                    StatChip(emoji: "\u{23F1}", value: duration, caption: "Duration")
-                    StatChip(emoji: "\u{1F3C6}", value: "\(result.bestSet)", caption: "Best set")
-                    StatChip(emoji: "\u{1F525}", value: "\(store.currentStreak)", caption: "Streak")
-                }
+                MetricStrip([
+                    .init(duration, "Duration"),
+                    .init("\(result.bestSet)", "Best set"),
+                    .init("\(store.currentStreak)", "Streak"),
+                ])
+                .pushCard()
 
                 if let diagnostics = result.failureDiagnostics, result.totalReps == 0 {
                     CountingFailurePanel(diagnostics: diagnostics)
                 }
 
                 if store.justSetPersonalRecord {
-                    CelebrationBadge(emoji: "\u{26A1}", title: "New personal record\n\(result.bestSet) in one set")
+                    CelebrationBadge(systemImage: "bolt.fill",
+                                     title: "New personal record. \(result.bestSet) in one set.")
                         .onAppear { Feedback.shared.celebrate() }
                 }
 
                 ForEach(store.pendingCelebrations) { achievement in
-                    CelebrationBadge(emoji: achievement.emoji, title: achievement.title)
+                    CelebrationBadge(systemImage: achievement.symbol, title: achievement.title)
                 }
 
                 if let score = result.formScore {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Form").font(Push.Typography.label)
-                            .foregroundStyle(Push.Palette.textSecondary)
+                        SectionHeader("Form", detail: "\(Int((score * 100).rounded()))%")
                         ProgressView(value: score).tint(Push.Palette.accent)
                         // Never scolding. Form data exists to show progress,
                         // and every rep was counted regardless.
@@ -74,7 +76,8 @@ struct SessionSummaryView: View {
                     onDone()
                 }
             }
-            .padding(Push.Metrics.gutter)
+            .padding(.horizontal, Push.Metrics.gutter)
+            .padding(.bottom, 28)
         }
         .background(Push.Palette.background)
         .onAppear {
@@ -94,9 +97,8 @@ private struct CountingFailurePanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("NOTHING COUNTED")
-                .font(Push.Typography.caption).tracking(2)
-                .foregroundStyle(Push.Palette.flame)
+            PushTag("Nothing counted", systemImage: "exclamationmark.triangle.fill",
+                    tint: Push.Palette.flame)
 
             if let advice = CountingCoach.advice(for: diagnostics, countedReps: 0) {
                 Text(advice)
@@ -105,7 +107,7 @@ private struct CountingFailurePanel: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Divider().overlay(Push.Palette.track)
+            Rectangle().fill(Push.Palette.stroke).frame(height: 1)
 
             detail("Reps judged", "\(diagnostics.candidateReps)")
             // Separates "the app could not see you" from "the app saw you and
@@ -169,9 +171,7 @@ private struct RecordingPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("SET RECORDED")
-                .font(Push.Typography.caption)
-                .foregroundStyle(Push.Palette.accent)
+            PushTag("Set recorded", systemImage: "waveform")
 
             Text("How many did you actually do?")
                 .font(Push.Typography.headline)
