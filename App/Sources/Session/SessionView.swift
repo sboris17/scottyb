@@ -156,8 +156,10 @@ private struct FramingView: View {
                 Text("Set up")
                     .font(Push.Typography.label)
                     .foregroundStyle(Push.Palette.textSecondary)
-                Spacer()
-                Image(systemName: "xmark").opacity(0)
+                // Balances the close button so the title lands centred.
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .semibold))
+                    .opacity(0)
             }
             .padding(.horizontal)
 
