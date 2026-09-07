@@ -1,0 +1,766 @@
+{
+  "$comment": "Course visual spec for the squared 18. Same footprint in every theme; only the theme block changes.",
+  "version": 1,
+  "layout": {
+    "plot_m": [
+      108,
+      108
+    ],
+    "grid": [
+      6,
+      6
+    ],
+    "cell_m": 18,
+    "pad_m": 12,
+    "collar_m": 3,
+    "rail": {
+      "height_m": 0.35,
+      "thickness_m": 0.25
+    },
+    "terrace_step_m": 0.6,
+    "path_width_m": 3,
+    "perimeter_wall": {
+      "height_m": 1.6,
+      "inset_m": 1
+    },
+    "hut": {
+      "cell": "C6",
+      "footprint_m": [
+        10,
+        10
+      ],
+      "ridge_m": 6,
+      "gate": "south wall, aligned to C6"
+    },
+    "landmark": {
+      "cell": "D1",
+      "max_height_m": 14,
+      "never_culled": true,
+      "role": "halfway marker between holes 9 and 10, and the course-wide compass"
+    },
+    "cells": [
+      {
+        "cell": "A1",
+        "kind": "hole",
+        "hole": 11
+      },
+      {
+        "cell": "B1",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "C1",
+        "kind": "hole",
+        "hole": 10
+      },
+      {
+        "cell": "D1",
+        "kind": "landmark",
+        "hole": null
+      },
+      {
+        "cell": "E1",
+        "kind": "hole",
+        "hole": 9
+      },
+      {
+        "cell": "F1",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "A2",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "B2",
+        "kind": "hole",
+        "hole": 12
+      },
+      {
+        "cell": "C2",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "D2",
+        "kind": "hole",
+        "hole": 7
+      },
+      {
+        "cell": "E2",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "F2",
+        "kind": "hole",
+        "hole": 8
+      },
+      {
+        "cell": "A3",
+        "kind": "hole",
+        "hole": 13
+      },
+      {
+        "cell": "B3",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "C3",
+        "kind": "hole",
+        "hole": 14
+      },
+      {
+        "cell": "D3",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "E3",
+        "kind": "hole",
+        "hole": 6
+      },
+      {
+        "cell": "F3",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "A4",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "B4",
+        "kind": "hole",
+        "hole": 15
+      },
+      {
+        "cell": "C4",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "D4",
+        "kind": "hole",
+        "hole": 5
+      },
+      {
+        "cell": "E4",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "F4",
+        "kind": "hole",
+        "hole": 4
+      },
+      {
+        "cell": "A5",
+        "kind": "hole",
+        "hole": 16
+      },
+      {
+        "cell": "B5",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "C5",
+        "kind": "hole",
+        "hole": 17
+      },
+      {
+        "cell": "D5",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "E5",
+        "kind": "hole",
+        "hole": 3
+      },
+      {
+        "cell": "F5",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "A6",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "B6",
+        "kind": "hole",
+        "hole": 18
+      },
+      {
+        "cell": "C6",
+        "kind": "hut",
+        "hole": null
+      },
+      {
+        "cell": "D6",
+        "kind": "hole",
+        "hole": 1
+      },
+      {
+        "cell": "E6",
+        "kind": "planting",
+        "hole": null
+      },
+      {
+        "cell": "F6",
+        "kind": "hole",
+        "hole": 2
+      }
+    ]
+  },
+  "route": {
+    "order": [
+      "D6",
+      "F6",
+      "E5",
+      "F4",
+      "D4",
+      "E3",
+      "D2",
+      "F2",
+      "E1",
+      "C1",
+      "A1",
+      "B2",
+      "A3",
+      "C3",
+      "B4",
+      "A5",
+      "C5",
+      "B6"
+    ],
+    "starts_at": "C6",
+    "ends_at": "C6",
+    "note": "Holes 1-9 climb the east half, 10-18 descend the west half. No segment crosses another."
+  },
+  "terraces": {
+    "tiers_m": [
+      0.0,
+      0.6,
+      1.2
+    ],
+    "rule": "Tier rises toward the north landmark: rows 5-6 = tier 0, rows 3-4 = tier 1, rows 1-2 = tier 2.",
+    "by_hole": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2,
+      "8": 2,
+      "9": 2,
+      "10": 2,
+      "11": 2,
+      "12": 2,
+      "13": 1,
+      "14": 1,
+      "15": 1,
+      "16": 0,
+      "17": 0,
+      "18": 0
+    }
+  },
+  "archetypes": {
+    "bank": {
+      "restitution": 0.62,
+      "desc": "Angled kicker wall on one side. The teaching shape."
+    },
+    "dogleg": {
+      "restitution": 0.55,
+      "desc": "L-shaped play area inside the square pad; corner blocked by a solid mass."
+    },
+    "carry": {
+      "restitution": 0.55,
+      "desc": "Gap in the surface with an island green. Ball in the gap resets to last safe point, +1 stroke."
+    },
+    "ramp": {
+      "restitution": 0.55,
+      "desc": "Bridges one 0.6 m terrace step. Only placed where the tier actually changes."
+    },
+    "tunnel": {
+      "restitution": 0.55,
+      "desc": "Enclosed run, entrance and exit both visible from the tee. Ball hidden for at most 1.2 s."
+    },
+    "mover": {
+      "restitution": 0.7,
+      "desc": "One rotating or sliding blocker on a fixed 4 s cycle, phase-locked to the tee. Imparts velocity."
+    }
+  },
+  "holes": [
+    {
+      "hole": 1,
+      "cell": "D6",
+      "tier": 0,
+      "archetype": "bank",
+      "signature": false
+    },
+    {
+      "hole": 2,
+      "cell": "F6",
+      "tier": 0,
+      "archetype": "dogleg",
+      "signature": false
+    },
+    {
+      "hole": 3,
+      "cell": "E5",
+      "tier": 0,
+      "archetype": "carry",
+      "signature": false
+    },
+    {
+      "hole": 4,
+      "cell": "F4",
+      "tier": 1,
+      "archetype": "ramp",
+      "signature": false
+    },
+    {
+      "hole": 5,
+      "cell": "D4",
+      "tier": 1,
+      "archetype": "tunnel",
+      "signature": false
+    },
+    {
+      "hole": 6,
+      "cell": "E3",
+      "tier": 1,
+      "archetype": "mover",
+      "signature": true
+    },
+    {
+      "hole": 7,
+      "cell": "D2",
+      "tier": 2,
+      "archetype": "dogleg",
+      "signature": false
+    },
+    {
+      "hole": 8,
+      "cell": "F2",
+      "tier": 2,
+      "archetype": "mover",
+      "signature": false
+    },
+    {
+      "hole": 9,
+      "cell": "E1",
+      "tier": 2,
+      "archetype": "ramp",
+      "signature": false
+    },
+    {
+      "hole": 10,
+      "cell": "C1",
+      "tier": 2,
+      "archetype": "bank",
+      "signature": false
+    },
+    {
+      "hole": 11,
+      "cell": "A1",
+      "tier": 2,
+      "archetype": "tunnel",
+      "signature": false
+    },
+    {
+      "hole": 12,
+      "cell": "B2",
+      "tier": 2,
+      "archetype": "carry",
+      "signature": true
+    },
+    {
+      "hole": 13,
+      "cell": "A3",
+      "tier": 1,
+      "archetype": "dogleg",
+      "signature": false
+    },
+    {
+      "hole": 14,
+      "cell": "C3",
+      "tier": 1,
+      "archetype": "mover",
+      "signature": false
+    },
+    {
+      "hole": 15,
+      "cell": "B4",
+      "tier": 1,
+      "archetype": "ramp",
+      "signature": false
+    },
+    {
+      "hole": 16,
+      "cell": "A5",
+      "tier": 0,
+      "archetype": "tunnel",
+      "signature": false
+    },
+    {
+      "hole": 17,
+      "cell": "C5",
+      "tier": 0,
+      "archetype": "bank",
+      "signature": false
+    },
+    {
+      "hole": 18,
+      "cell": "B6",
+      "tier": 0,
+      "archetype": "carry",
+      "signature": true
+    }
+  ],
+  "kit": {
+    "materials_per_theme": [
+      "flat_vertex_color",
+      "water",
+      "emissive",
+      "foliage_alpha"
+    ],
+    "ball": {
+      "radius_m": 0.028,
+      "note": "~30% oversized; physics and render radius are the same value.",
+      "color": "#F7F8F2",
+      "contact_shadow": "always drawn, even in shadow"
+    },
+    "cup": {
+      "diameter_m": 0.108,
+      "pole_m": 0.9,
+      "flag_m": 0.28,
+      "note": "Interior black, pale lip ring. Only the flag colour is themed."
+    },
+    "character": {
+      "height_m": 1.7,
+      "rim_light": true,
+      "contact_ellipse": true
+    },
+    "camera": {
+      "behind_m": 6.5,
+      "height_m": 2.5,
+      "pitch_deg": -18,
+      "fov_deg": 55,
+      "note": "The 3 m collar exists so this camera never clips a rail or the perimeter wall."
+    },
+    "sky": "two-colour gradient dome, no HDRI",
+    "ao": "baked vertex AO along every rail base and terrace edge",
+    "invariants": [
+      "The 36-cell grid, route, hut cell and landmark cell are identical in every theme.",
+      "Pad 12x12 m, rail 0.35 m, same restitution in every theme.",
+      "Same three terraces on the same holes.",
+      "Turf luminance stays in L* 42-62 so a white ball and a character silhouette both read. Neon Arcade is the sole exception and compensates with emissives."
+    ]
+  },
+  "budget": {
+    "draw_calls": 120,
+    "tris_on_screen": 150000,
+    "materials_per_theme": 4,
+    "shadow": {
+      "cascades": 1,
+      "map": 1024,
+      "range_m": 50
+    },
+    "lod": {
+      "lod0": "current + next hole",
+      "lod1": "within 40 m, props culled",
+      "lod2": "beyond 40 m, silhouette only"
+    },
+    "instanced": [
+      "rails",
+      "tee plinths",
+      "flags",
+      "trees"
+    ]
+  },
+  "themes": [
+    {
+      "id": "tropical_lagoon",
+      "name": "Tropical Lagoon",
+      "order": 1,
+      "unlock": "default",
+      "blurb": "Late afternoon, low sun off the water, bleached bamboo. The warmest and most forgiving read in the set, and the one the kit is tuned against.",
+      "palette": {
+        "sky_zenith": "#2FA8DE",
+        "sky_horizon": "#FFD9A0",
+        "turf": "#4FB86A",
+        "turf_shade": "#45A85F",
+        "rail": "#E8DCC0",
+        "rail_top": "#C9B48C",
+        "ground": "#D9C79A",
+        "path": "#C4A97A",
+        "water": "#2BC4C8",
+        "water_deep": "#128A9E",
+        "prop_1": "#E0553B",
+        "accent": "#FFB93B"
+      },
+      "light": {
+        "key_color": "#FFC98A",
+        "key_intensity": 3.2,
+        "azimuth_deg": 250,
+        "elevation_deg": 14,
+        "hemi_sky": "#7EC8E8",
+        "hemi_ground": "#C9A06A",
+        "hemi_intensity": 0.55,
+        "fog_color": "#CFE0E8",
+        "fog_near_m": 40,
+        "fog_far_m": 190,
+        "exposure": 1.05,
+        "bloom": 0.25
+      },
+      "reskin": {
+        "bank": "Driftwood kicker log",
+        "dogleg": "Boulder and fern mass",
+        "carry": "Open lagoon, coral rim",
+        "ramp": "Boardwalk on stilts",
+        "tunnel": "Hollow palm trunk",
+        "mover": "Spinning frond fan"
+      },
+      "hut": "Thatched tiki hut, open counter, hanging lanterns",
+      "landmark": "14 m carved tiki totem, torch at the base"
+    },
+    {
+      "id": "alpine_pines",
+      "name": "Alpine Pines",
+      "order": 2,
+      "unlock": "course_1_complete",
+      "blurb": "High, clean and cold. Dark timber rails against pale sky, snow only above the treeline so it never competes with the ball.",
+      "palette": {
+        "sky_zenith": "#1E5F9E",
+        "sky_horizon": "#BBD9EE",
+        "turf": "#3E8F63",
+        "turf_shade": "#357D57",
+        "rail": "#6B4A32",
+        "rail_top": "#8A6242",
+        "ground": "#6E7C63",
+        "path": "#9A9086",
+        "water": "#4FA8C8",
+        "water_deep": "#2A6E8C",
+        "prop_1": "#1F5C3D",
+        "accent": "#E2574B"
+      },
+      "light": {
+        "key_color": "#FFF4E0",
+        "key_intensity": 3.6,
+        "azimuth_deg": 215,
+        "elevation_deg": 42,
+        "hemi_sky": "#A9C6DC",
+        "hemi_ground": "#6E7C63",
+        "hemi_intensity": 0.6,
+        "fog_color": "#C3D6E2",
+        "fog_near_m": 60,
+        "fog_far_m": 240,
+        "exposure": 1.0,
+        "bloom": 0.12
+      },
+      "reskin": {
+        "bank": "Split-log kicker",
+        "dogleg": "Granite outcrop",
+        "carry": "Meltwater channel",
+        "ramp": "Timber sleeper ramp",
+        "tunnel": "Mine adit, shored",
+        "mover": "Waterwheel paddle"
+      },
+      "hut": "Log cabin with a steep shingle roof and a smoking chimney",
+      "landmark": "14 m rock spire with a snow cap and a summit cross"
+    },
+    {
+      "id": "desert_mesa",
+      "name": "Desert Mesa",
+      "order": 3,
+      "unlock": "course_2_complete",
+      "blurb": "Hard overhead sun and long red shadows. The only theme where the ground out-saturates the turf, so rails go dark to hold the pads together.",
+      "palette": {
+        "sky_zenith": "#3C86C4",
+        "sky_horizon": "#F6C77A",
+        "turf": "#6E9E4E",
+        "turf_shade": "#5D8A42",
+        "rail": "#B4653C",
+        "rail_top": "#D2855A",
+        "ground": "#D89A63",
+        "path": "#B98A5F",
+        "water": "#3FA9C9",
+        "water_deep": "#1F7A96",
+        "prop_1": "#A8452F",
+        "accent": "#F2A03D"
+      },
+      "light": {
+        "key_color": "#FFE7BC",
+        "key_intensity": 4.2,
+        "azimuth_deg": 200,
+        "elevation_deg": 62,
+        "hemi_sky": "#E0B98A",
+        "hemi_ground": "#C97B4E",
+        "hemi_intensity": 0.7,
+        "fog_color": "#E8C9A0",
+        "fog_near_m": 70,
+        "fog_far_m": 280,
+        "exposure": 1.1,
+        "bloom": 0.15
+      },
+      "reskin": {
+        "bank": "Slab of red rock",
+        "dogleg": "Barrel-cactus cluster",
+        "carry": "Sunken oasis pool",
+        "ramp": "Stacked stone shelf",
+        "tunnel": "Culvert under the arroyo",
+        "mover": "Turning windpump"
+      },
+      "hut": "Adobe pueblo, flat roof, protruding viga beams, striped awning",
+      "landmark": "14 m natural rock arch you walk under at halfway"
+    },
+    {
+      "id": "zen_garden",
+      "name": "Zen Garden",
+      "order": 4,
+      "unlock": "course_3_complete",
+      "blurb": "Raked gravel, moss and charcoal timber, with one red object per view. The quietest palette in the set and the one that makes the accent do the most work.",
+      "palette": {
+        "sky_zenith": "#7FB2D9",
+        "sky_horizon": "#F3DCE4",
+        "turf": "#5FA36B",
+        "turf_shade": "#4E8E5C",
+        "rail": "#3E3A36",
+        "rail_top": "#5A534C",
+        "ground": "#DCD6C8",
+        "path": "#C8C0AE",
+        "water": "#5BA7B5",
+        "water_deep": "#2E6E7C",
+        "prop_1": "#D4553A",
+        "accent": "#C9412F"
+      },
+      "light": {
+        "key_color": "#FFF0E0",
+        "key_intensity": 3.0,
+        "azimuth_deg": 235,
+        "elevation_deg": 38,
+        "hemi_sky": "#C9D8E4",
+        "hemi_ground": "#DCD6C8",
+        "hemi_intensity": 0.65,
+        "fog_color": "#E3E9EC",
+        "fog_near_m": 50,
+        "fog_far_m": 210,
+        "exposure": 1.0,
+        "bloom": 0.18
+      },
+      "reskin": {
+        "bank": "Angled cut stone",
+        "dogleg": "Clipped hedge mass",
+        "carry": "Koi pond, plank bridge",
+        "ramp": "Stepped stone terrace",
+        "tunnel": "Split bamboo pipe",
+        "mover": "Shishi-odoshi tipping arm"
+      },
+      "hut": "Timber teahouse, deep eaves, paper lanterns, gravel forecourt",
+      "landmark": "14 m vermilion torii straddling the halfway path"
+    },
+    {
+      "id": "neon_arcade",
+      "name": "Neon Arcade",
+      "order": 5,
+      "unlock": "course_4_complete",
+      "blurb": "Night, black ground, everything readable is emissive. Build this one fifth: it breaks every assumption a daylight renderer makes, and you want that to happen early.",
+      "palette": {
+        "sky_zenith": "#0A0620",
+        "sky_horizon": "#2A0F4A",
+        "turf": "#16203A",
+        "turf_shade": "#1E2C4E",
+        "rail": "#0E1428",
+        "rail_top": "#FF3DAE",
+        "ground": "#090C18",
+        "path": "#7A3DFF",
+        "water": "#1BE0FF",
+        "water_deep": "#0E7A98",
+        "prop_1": "#2CE8C8",
+        "accent": "#FFF04D"
+      },
+      "light": {
+        "key_color": "#6A7AFF",
+        "key_intensity": 0.8,
+        "azimuth_deg": 270,
+        "elevation_deg": 20,
+        "hemi_sky": "#1A2246",
+        "hemi_ground": "#090C18",
+        "hemi_intensity": 0.3,
+        "fog_color": "#0F1430",
+        "fog_near_m": 15,
+        "fog_far_m": 130,
+        "exposure": 1.2,
+        "bloom": 0.7
+      },
+      "reskin": {
+        "bank": "Angled bumper, magenta edge",
+        "dogleg": "Solid data block",
+        "carry": "Void gap, cyan floor",
+        "ramp": "Holographic incline",
+        "tunnel": "Warp pipe, cyan interior",
+        "mover": "Sweeping laser gate"
+      },
+      "hut": "Arcade cabinet booth, marquee sign, CRT glow spilling onto the path",
+      "landmark": "14 m glowing arch that pulses on the mover cycle",
+      "notes": "Turf sits below the L* 42-62 band by design. Ball gets a small emissive halo and the character gets a fill light instead of a rim."
+    },
+    {
+      "id": "haunted_grove",
+      "name": "Haunted Grove",
+      "order": 6,
+      "unlock": "all_courses_complete",
+      "blurb": "Deep twilight with ground fog at ankle height. Turf stays in the readable band while everything around it drops away, so the pads glow like stages.",
+      "palette": {
+        "sky_zenith": "#171334",
+        "sky_horizon": "#4A2A5C",
+        "turf": "#3E6B4A",
+        "turf_shade": "#355C41",
+        "rail": "#4A3A46",
+        "rail_top": "#6A5460",
+        "ground": "#2E2A34",
+        "path": "#55505C",
+        "water": "#3E7A5E",
+        "water_deep": "#2A5244",
+        "prop_1": "#E0762A",
+        "accent": "#8AE05C"
+      },
+      "light": {
+        "key_color": "#A8B8E8",
+        "key_intensity": 1.1,
+        "azimuth_deg": 30,
+        "elevation_deg": 28,
+        "hemi_sky": "#3A3450",
+        "hemi_ground": "#2E2A34",
+        "hemi_intensity": 0.35,
+        "fog_color": "#2E2A44",
+        "fog_near_m": 12,
+        "fog_far_m": 110,
+        "exposure": 1.15,
+        "bloom": 0.45
+      },
+      "reskin": {
+        "bank": "Leaning headstone",
+        "dogleg": "Mausoleum corner",
+        "carry": "Swamp gap, lily pads",
+        "ramp": "Coffin-lid plank ramp",
+        "tunnel": "Crypt passage, candlelit",
+        "mover": "Swinging scythe pendulum"
+      },
+      "hut": "Crooked caretaker's shack, lantern on a hook, leaning porch",
+      "landmark": "14 m dead oak with a lit lantern in the crook",
+      "notes": "Ground fog is a separate ankle-height plane, not the distance fog. Keep it under the rail line so it never hides the ball."
+    }
+  ]
+}
