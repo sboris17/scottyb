@@ -2,12 +2,20 @@
 
 Art direction for every course in the game. One footprint, six skins.
 
-Machine-readable companion: [`course-themes.json`](./course-themes.json) — layout, route,
-terraces, archetypes, budgets and all six theme blocks. Treat that file as the source of
-truth for numbers; this document explains the reasoning behind them.
+Machine-readable companions — treat these as the source of truth for numbers; this document
+explains the reasoning behind them:
 
-Visual reference (plan drawing, palette plates, per-theme mock scenes):
-<https://claude.ai/code/artifact/ff04515e-6a7f-4c07-85f8-1544bfd3cdd6>
+- [`course-themes.json`](./course-themes.json) — layout, route, terraces, archetypes, budgets
+  and all six theme blocks.
+- [`course-holes.json`](./course-holes.json) — per-hole geometry: tee, cup, every solid, water,
+  ramp, tunnel and mover as coordinates in metres, plus the intended line for each hole.
+
+Visual reference:
+
+- Plot plan, palette plates, per-theme mock scenes —
+  <https://claude.ai/code/artifact/ff04515e-6a7f-4c07-85f8-1544bfd3cdd6>
+- All eighteen hole plans drawn to scale —
+  <https://claude.ai/code/artifact/e6b27b50-8839-4841-824c-2cb5b2cb510a>
 
 ---
 
@@ -137,6 +145,36 @@ is a carry directly beside the hut — the finish is the one everybody watches.
 | Cell | D6 | F6 | E5 | F4 | D4 | E3 | D2 | F2 | E1 | C1 | A1 | B2 | A3 | C3 | B4 | A5 | C5 | B6 |
 | Tier | 0 | 0 | 0 | 1 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 0 | 0 | 0 |
 | Type | bank | dogleg | carry | ramp | tunnel | **mover** | dogleg | mover | ramp | bank | tunnel | **carry** | dogleg | mover | ramp | tunnel | bank | **carry** |
+| Par | 2 | 3 | 3 | 2 | 2 | 3 | 3 | 3 | 3 | 2 | 3 | 3 | 3 | 3 | 2 | 2 | 3 | 3 |
+
+Front nine par 24, back nine par 24, **course par 48**.
+
+### Hole plans
+
+Each hole is a 12 × 12 m pad with the tee on the south edge and the cup somewhere in the
+northern half. Full geometry — every solid, water body, ramp, tunnel mouth and mover, plus tee,
+cup and intended line — is in [`course-holes.json`](./course-holes.json) in metres, origin at
+the pad's bottom-left corner, y up. Shape kinds:
+
+| Kind | Meaning |
+| --- | --- |
+| `mass` | Solid block. Rails apply; ball rebounds. |
+| `water` | Ball resets to the last safe point, +1 stroke. |
+| `up` | Raised shelf, +0.6 m above the pad floor. |
+| `turf` | Surface restored over water — islands, causeways, bridges. |
+| `ramp` | Climbs or descends the 0.6 m step. |
+| `riser` | The step face itself. Stops a ball that misses the ramp. |
+| `mover` | `gate` (sweeping, timable), `slide` (oscillating bar), `spin` (continuous, no gap). |
+
+Three shaping decisions worth keeping when the geometry gets tuned:
+
+1. **Hole 1 has no obstacle at all** — two wedges funnel the top of the pad into the cup. It is
+   the hole that teaches a player that walls are friendly, and it should stay almost impossible
+   to fail.
+2. **Hole 16 is deliberately the easiest on the course.** It sits two before the finish so the
+   round lifts before 17 and 18 bite. Do not "balance" it away.
+3. **Hole 17 is the only blind cup** and the only two-cushion hole. It is the difficulty peak;
+   18 is a spectacle, not a test.
 
 ---
 
