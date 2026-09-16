@@ -166,6 +166,26 @@ the pad's bottom-left corner, y up. Shape kinds:
 | `riser` | The step face itself. Stops a ball that misses the ramp. |
 | `mover` | `gate` (sweeping, timable), `slide` (oscillating bar), `spin` (continuous, no gap). |
 
+Run `node scripts/validate-holes.mjs` after any change to the geometry. It checks, without
+needing a physics engine, that every tee and cup sits on playable surface, no line passes
+through a solid, every mid-line bend happens at a real wall and obeys the reflection law, water
+is only crossed where a hole is meant to carry it, risers are only crossed by a ramp, and no
+hole's intended route needs more strokes than its par. CI runs it on every push.
+
+It caught three real bugs on its first run, all since fixed:
+
+- **Hole 1's funnel bounce was 24° off a true mirror.** A ball arriving that steeply is thrown
+  back down the pad, not gathered into the cup.
+- **Hole 5's second tunnel was unreachable.** The mouth is vertical and the tee sits at x=6, so
+  no ball can enter it on the fly; the "quicker" route actually took three strokes on a par 2.
+  The hole now has one 2 m mouth.
+- **Hole 7's chamfer sat above the bottom corridor.** The tee shot ran almost parallel to the
+  face, so the rebound went straight back into the block. Replaced with hole 2's floor wedge,
+  mirrored, which the corridor can actually reach.
+
+All six bank lines on the course are now solved exactly — every bounce is within 0.2° of a true
+mirror, so the drawn line is the line the ball takes.
+
 Three shaping decisions worth keeping when the geometry gets tuned:
 
 1. **Hole 1 has no obstacle at all** — two wedges funnel the top of the pad into the cup. It is
