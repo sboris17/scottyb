@@ -1,4 +1,4 @@
-name: Verify course
+name: Verify courses
 
 # Runs on every branch: a broken exercise should be caught before review, not at merge.
 on:
@@ -17,7 +17,15 @@ jobs:
         with:
           node-version: "20"
 
-      # Checks that every reference solution passes, every starter fails, and
-      # every lesson is structurally complete. No dependencies to install.
-      - name: Verify the course
-        run: npm run verify
+      # Coding 101: every reference solution passes, every starter fails.
+      - name: Verify Coding 101
+        run: npm run verify:code
+
+      # The spreadsheet engine, pinned to real Google Sheets behaviour.
+      - name: Test the formula engine
+        run: npm run test:engine
+
+      # Google Sheets 101: solutions pass, starting states do not, answers land in
+      # cells the learner can actually edit.
+      - name: Verify Google Sheets 101
+        run: npm run verify:sheets

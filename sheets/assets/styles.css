@@ -1,4 +1,4 @@
-/* Coding 101 — styles. No frameworks, no build step, no network requests. */
+/* Google Sheets 101 — styles. No frameworks, no build step, no network requests. */
 
 :root {
   --bg: #fbfaf8;
@@ -7,8 +7,8 @@
   --border: #e2ded7;
   --text: #23201c;
   --text-dim: #6b655c;
-  --accent: #b4541f;
-  --accent-soft: #fbeee6;
+  --accent: #12805c;
+  --accent-soft: #e4f4ee;
   --pass: #1f7a45;
   --pass-soft: #e8f4ec;
   --fail: #b3261e;
@@ -28,8 +28,8 @@
     --border: #35322d;
     --text: #ece8e1;
     --text-dim: #a09a90;
-    --accent: #e8925c;
-    --accent-soft: #33251c;
+    --accent: #4fc79a;
+    --accent-soft: #16302a;
     --pass: #6bcf95;
     --pass-soft: #1b2e23;
     --fail: #f08d85;
@@ -567,6 +567,202 @@ kbd {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ===================================================================
+   The spreadsheet
+   =================================================================== */
+
+.formulabar {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.formulabar__ref {
+  flex: 0 0 auto;
+  min-width: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0 10px;
+  background: var(--surface-2);
+  border-right: 1px solid var(--border);
+  color: var(--text);
+}
+
+.formulabar__fx {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-dim);
+  border-right: 1px solid var(--border);
+}
+
+.formulabar__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 9px 12px;
+}
+
+.formulabar__input:read-only { color: var(--text-dim); }
+.formulabar[data-readonly="true"] { background: var(--surface-2); }
+
+.cellnote {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--surface-2);
+}
+
+.cellnote[hidden] { display: none; }
+
+.gridwrap {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: auto;
+  background: var(--surface);
+  max-height: 460px;
+}
+
+.gridwrap:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+table.grid {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  font-family: var(--sans);
+  table-layout: fixed;
+  white-space: nowrap;
+}
+
+.grid__corner,
+.grid__colhead,
+.grid__rowhead {
+  position: sticky;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 11.5px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  padding: 4px 6px;
+  z-index: 2;
+}
+
+.grid__corner { top: 0; left: 0; z-index: 4; width: 40px; }
+.grid__colhead { top: 0; z-index: 3; }
+.grid__rowhead { left: 0; width: 40px; z-index: 3; }
+
+.grid__colhead[data-active="true"],
+.grid__rowhead[data-active="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.grid__cell {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 7px;
+  height: 27px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+  cursor: cell;
+}
+
+.grid__cell[data-align="right"] { text-align: right; }
+.grid__cell[data-align="center"] { text-align: center; }
+
+/* Supplied data: subtly greyed, so it reads as "given, not yours". */
+.grid__cell[data-locked="true"] { background: var(--surface-2); color: var(--text); }
+
+/* Cells the learner fills in. */
+.grid__cell[data-entry="true"] {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Written by a fill range, or covered by a spill: real, but not typed by hand. */
+.grid__cell[data-filled="true"],
+.grid__cell[data-spilled="true"] {
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  color: var(--text);
+}
+
+.grid__cell[data-error="true"] { color: var(--fail); font-family: var(--mono); font-size: 12px; }
+
+.grid__cell[data-selected="true"] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+  position: relative;
+  z-index: 1;
+}
+
+.grid__cell[data-editing="true"] { padding: 0; }
+
+.grid__editor {
+  width: 100%;
+  height: 26px;
+  border: none;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 0 6px;
+}
+
+.gridkey {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 8px 0 0;
+}
+
+.gridkey__item { display: flex; align-items: center; gap: 6px; }
+
+.gridkey__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.gridkey__swatch[data-kind="entry"] {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.gridkey__swatch[data-kind="filled"] { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+
+@media (max-width: 880px) {
+  .gridwrap { max-height: 380px; }
+  .formulabar__ref { min-width: 52px; }
 }
 
 .sidebar__cross {

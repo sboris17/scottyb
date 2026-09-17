@@ -1,3 +1,19 @@
+# Interactive courses
+
+Two self-contained, zero-install courses. Both run in the browser from static files
+— no build step, no accounts, no network access — and both check your work against
+real assertions rather than comparing it to an expected answer.
+
+| Course | What it teaches | Size |
+|--------|-----------------|------|
+| **[Coding 101](index.html)** (below) | Programming from scratch, in JavaScript | 10 lessons, 31 exercises, 159 checks |
+| **[Google Sheets 101](sheets/)** | Spreadsheets from `=` to `QUERY` | 10 lessons, 31 exercises, 203 checks |
+
+`npm run verify` checks both. See [`sheets/README.md`](sheets/README.md) for the
+Sheets course, which ships its own formula engine.
+
+---
+
 # Coding 101
 
 A hands-on introduction to programming for people who have never written a line of
@@ -83,7 +99,8 @@ the same lesson files can be rendered in a browser and verified in CI.
 ## Verifying the course
 
 ```bash
-npm run verify
+npm run verify:code    # this course
+npm run verify         # both courses
 ```
 
 This runs in CI on every push and checks, for all 31 exercises:

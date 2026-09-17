@@ -2,10 +2,13 @@
   "name": "coding-101",
   "version": "1.0.0",
   "private": true,
-  "description": "Coding 101 — an interactive, zero-install introduction to programming.",
+  "description": "Two interactive, zero-install courses: Coding 101 and Google Sheets 101.",
   "type": "module",
   "scripts": {
-    "verify": "node tools/verify.mjs",
+    "verify": "npm run verify:code && npm run test:engine && npm run verify:sheets",
+    "verify:code": "node tools/verify.mjs",
+    "verify:sheets": "node sheets/tools/verify.mjs",
+    "test:engine": "node sheets/tools/engine-tests.mjs",
     "serve": "python3 -m http.server 8000"
   }
 }
