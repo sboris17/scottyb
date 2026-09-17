@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "title": "THE PARLEY",
+    "subtitle": "a sunday night football parlay",
+    "kicker": "SUNDAY NIGHT",
+    "book": "SNF SAME-GAME PARLAY",
+    "stake": 25.0,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "_comment": "PLACEHOLDER PICKS. Swap the legs below for your real ones and re-run build.py — odds and payout are computed, not hardcoded.",
+  "legs": [
+    { "pick": "CHIEFS -3.5",            "market": "SPREAD",     "odds": "-110", "note": "primetime, at home, rested" },
+    { "pick": "OVER 47.5",              "market": "TOTAL",      "odds": "-105", "note": "two top-10 offenses, dome" },
+    { "pick": "MAHOMES 1.5+ PASS TD",   "market": "PLAYER PROP","odds": "+105", "note": "red zone volume is the bet" },
+    { "pick": "KELCE ANYTIME TD",       "market": "PLAYER PROP","odds": "+165", "note": "the leg that ruins your night" }
+  ],
+  "timeline": [
+    { "type": "cold_open", "dur": 4.0 },
+    { "type": "title",     "dur": 3.4 },
+    { "type": "slate",     "dur": 4.0, "slot": 1,
+      "character": "ELIZABETH SWANN",
+      "quote": "PARLEY!\nI invoke the right of parley!",
+      "source": "Curse of the Black Pearl",
+      "direction": "hard cut in on the word. no fade." },
+    { "type": "code",      "dur": 4.4 },
+    { "type": "leg",       "dur": 3.6, "index": 0 },
+    { "type": "leg",       "dur": 3.6, "index": 1 },
+    { "type": "slate",     "dur": 4.5, "slot": 2,
+      "character": "PINTEL & RAGETTI",
+      "quote": "Parley?\nParlili... parsnip...\npar... le... nee?",
+      "source": "Curse of the Black Pearl",
+      "direction": "let the whole bit breathe, cut on 'parley'." },
+    { "type": "leg",       "dur": 3.6, "index": 2 },
+    { "type": "leg",       "dur": 3.6, "index": 3 },
+    { "type": "slate",     "dur": 3.6, "slot": 3,
+      "character": "JACK SPARROW",
+      "quote": "The word is PARLEY.",
+      "source": "Curse of the Black Pearl",
+      "direction": "punch in on Jack, then smash to the ticket." },
+    { "type": "ticket",    "dur": 6.5 },
+    { "type": "slate",     "dur": 4.2, "slot": 4,
+      "character": "CAPTAIN BARBOSSA",
+      "quote": "The Code is more what you'd\ncall guidelines than actual rules.",
+      "source": "Curse of the Black Pearl",
+      "direction": "run under the ticket as the hedge disclaimer." },
+    { "type": "outro",     "dur": 4.5 }
+  ]
+}

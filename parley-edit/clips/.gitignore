@@ -1,0 +1,7 @@
+# no footage in git
+*.mp4
+*.mov
+*.m4v
+*.mkv
+*.webm
+!README.md
