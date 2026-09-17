@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coding 101</title>
+    <meta
+      name="description"
+      content="A hands-on introduction to programming: ten short lessons and 31 exercises you solve in the browser, checked as you go."
+    />
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="masthead">
+      <a class="masthead__brand" href="#/">Coding&nbsp;<span>101</span></a>
+      <div class="masthead__progress">
+        <div class="meter" role="img" aria-label="Course progress">
+          <div class="meter__fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+      <span class="masthead__count" id="progress-count">0 / 0 exercises</span>
+    </header>
+
+    <div class="shell">
+      <aside class="sidebar">
+        <h2 class="sidebar__heading">Lessons</h2>
+        <nav id="lesson-nav" aria-label="Lessons"></nav>
+      </aside>
+
+      <main class="content" id="view">
+        <noscript>
+          <h1>Coding 101</h1>
+          <p class="notice">
+            This course runs your code in the browser, so it needs JavaScript switched on.
+            Enable it and reload the page.
+          </p>
+        </noscript>
+      </main>
+    </div>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

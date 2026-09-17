@@ -1,0 +1,23 @@
+name: Verify course
+
+# Runs on every branch: a broken exercise should be caught before review, not at merge.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Verify lessons and exercises
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Checks that every reference solution passes, every starter fails, and
+      # every lesson is structurally complete. No dependencies to install.
+      - name: Verify the course
+        run: npm run verify
